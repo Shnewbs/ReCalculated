@@ -18,11 +18,11 @@ public class ListenerTally<T extends ISonarListener> {
 		return tallies[type];
 	}
 
-	public int getTally(Enum type) {
+	public int getTally(Enum<?> type) {
 		return getTally(type.ordinal());
 	}
 
-	public boolean hasTally(Enum type) {
+	public boolean hasTally(Enum<?> type) {
 		return getTally(type) > 0;
 	}
 
@@ -43,33 +43,37 @@ public class ListenerTally<T extends ISonarListener> {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 		return listener.hashCode();
 	}
 
+	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof ListenerTally && listener.equals(((ListenerTally) obj).listener);
+		return obj instanceof ListenerTally && listener.equals(((ListenerTally<?>) obj).listener);
 	}
 
-	/** make sure you update the lists state! */
-	public void addTallies(int amount, Enum... enums) {
+	/** Make sure you update the list's state! */
+	public void addTallies(int amount, Enum<?>... enums) {
 		addTallies(amount, ListHelper.getOrdinals(enums));
 	}
 
-	/** make sure you update the lists state! */
+	/** Make sure you update the list's state! */
 	public void addTallies(int amount, int... types) {
-		for (int type : types)
+		for (int type : types) {
 			tallies[type] += amount;
+		}
 	}
 
-	/** make sure you update the lists state! */
-	public void removeTallies(int amount, Enum... enums) {
+	/** Make sure you update the list's state! */
+	public void removeTallies(int amount, Enum<?>... enums) {
 		removeTallies(amount, ListHelper.getOrdinals(enums));
 	}
 
-	/** make sure you update the lists state! */
+	/** Make sure you update the list's state! */
 	public void removeTallies(int amount, int... types) {
-		for (int type : types)
+		for (int type : types) {
 			tallies[type] -= amount;
+		}
 	}
 }

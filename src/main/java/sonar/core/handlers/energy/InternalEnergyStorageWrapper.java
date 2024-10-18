@@ -4,7 +4,11 @@ import cofh.redstoneflux.api.IEnergyStorage;
 import net.darkhax.tesla.api.ITeslaConsumer;
 import net.darkhax.tesla.api.ITeslaHolder;
 import net.darkhax.tesla.api.ITeslaProducer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.common.Optional;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.utils.ActionType;
@@ -16,13 +20,12 @@ import sonar.core.network.sync.SyncEnergyStorage;
         @Optional.Interface(iface = "net.darkhax.tesla.api.ITeslaProducer", modid = "tesla"),
         @Optional.Interface(iface = "cofh.redstoneflux.api.IEnergyStorage", modid = "redstoneflux")
 })
-
 public class InternalEnergyStorageWrapper implements net.minecraftforge.energy.IEnergyStorage, IEnergyStorage, ITeslaConsumer, ITeslaProducer, ITeslaHolder, IEnergyHandler {
 
     public final SyncEnergyStorage storage;
-    public final EnumFacing face;
+    public final Direction face;
 
-    public InternalEnergyStorageWrapper(SyncEnergyStorage storage, EnumFacing face){
+    public InternalEnergyStorageWrapper(SyncEnergyStorage storage, Direction face) {
         this.storage = storage;
         this.face = face;
     }

@@ -30,7 +30,7 @@ public class NBTHelper {
 	/** cheats to add info to a TileEntity on place, without having a stack */
 	public static boolean setTileEntityNBT(World worldIn, @Nullable EntityPlayer player, BlockPos pos, NBTTagCompound fakeTag) {
 		ItemStack stack = new ItemStack(Blocks.AIR, 1);
-		stack.getTagCompound().setTag("BlockEntityTag", fakeTag);
+		stack.setTagInfo("BlockEntityTag", fakeTag);
 		return ItemBlock.setTileEntityNBT(worldIn, player, pos, stack);
 	}
 
@@ -85,7 +85,8 @@ public class NBTHelper {
 	public static <T extends INBTSyncable> T instanceNBTSyncable(Class<T> classType, NBTTagCompound tag) {
 		T obj;
 		try {
-			(obj = classType.newInstance()).readData(tag, SyncType.SAVE);
+			obj = classType.newInstance();
+			obj.readData(tag, SyncType.SAVE);
 			return obj;
 		} catch (InstantiationException | IllegalAccessException e) {
 			SonarCore.logger.error("FAILED TO CREATE NEW INSTANCE OF " + classType.getSimpleName());
@@ -93,7 +94,6 @@ public class NBTHelper {
 		return null;
 	}
 
-	/* public static void writeEnergyStorage(EnergyStorage storage, NBTTagCompound nbt) { NBTTagCompound energyTag = new NBTTagCompound(); storage.writeToNBT(energyTag); nbt.setTag("energyStorage", energyTag); } public static void readEnergyStorage(EnergyStorage storage, NBTTagCompound nbt) { if (nbt.hasKey("energyStorage")) { storage.readFromNBT(nbt.getCompoundTag("energyStorage")); } } */
 	public static void writeFluidToBuf(FluidStack stack, ByteBuf buf) {
 		ByteBufUtils.writeUTF8String(buf, FluidRegistry.getFluidName(stack.getFluid()));
 		buf.writeInt(stack.amount);
@@ -107,12 +107,10 @@ public class NBTHelper {
 
 	public static FluidStack readFluidFromBuf(ByteBuf buf) {
 		String fluidName = ByteBufUtils.readUTF8String(buf);
-
 		if (fluidName == null || FluidRegistry.getFluid(fluidName) == null) {
 			return null;
 		}
 		FluidStack stack = new FluidStack(FluidRegistry.getFluid(fluidName), buf.readInt());
-
 		if (buf.readBoolean()) {
 			stack.tag = ByteBufUtils.readTag(buf);
 		}
@@ -149,7 +147,7 @@ public class NBTHelper {
 	public enum SyncType {
 		SAVE(0), DROP(2), SPECIAL(3), PACKET(4), DEFAULT_SYNC(1), SYNC_OVERRIDE(1), NONE(5);
 
-		private int type;
+		private final int type;
 
 		SyncType(int type) {
 			this.type = type;
@@ -185,176 +183,168 @@ public class NBTHelper {
 		}
 	}
 
-	public void getAndCheck(Object obj, NBTTagCompound tag, String key, boolean shouldCheck) {
-		if (!shouldCheck || tag.hasKey(key)) {
-			obj = readNBTBase(tag, tag.getTag(key).getId(), key);
-		}
-	}
-
-	public static NBTTagCompound writeNBTBase(NBTTagCompound nbt, int type, Object object, String tagName) {
+	public static void writeNBTBase(NBTTagCompound nbt, int type, Object object, String tagName) {
 		if (object == null) {
 			SonarCore.logger.error("NBT ERROR: Can't write NULL");
-			return nbt;
+			return;
 		}
 		if (tagName == null) {
 			SonarCore.logger.error("NBT ERROR: Can't write with no TAG NAME");
-			return nbt;
+			return;
 		}
 		switch (type) {
-		case NBT.TAG_END:
-			nbt.setBoolean(tagName, (Boolean) object);
-			break;
-		case NBT.TAG_BYTE:
-			nbt.setByte(tagName, (Byte) object);
-			break;
-		case NBT.TAG_SHORT:
-			nbt.setShort(tagName, (Short) object);
-			break;
-		case NBT.TAG_INT:
-			nbt.setInteger(tagName, (Integer) object);
-			break;
-		case NBT.TAG_LONG:
-			nbt.setLong(tagName, (Long) object);
-			break;
-		case NBT.TAG_FLOAT:
-			nbt.setFloat(tagName, (Float) object);
-			break;
-		case NBT.TAG_DOUBLE:
-			nbt.setDouble(tagName, (Double) object);
-			break;
-		case NBT.TAG_BYTE_ARRAY:
-			nbt.setByteArray(tagName, (byte[]) object);
-			break;
-		case NBT.TAG_STRING:
-			nbt.setString(tagName, (String) object);
-			break;
-		case NBT.TAG_LIST:
-			nbt.setTag(tagName, (NBTBase) object);
-			break;
-		case NBT.TAG_COMPOUND:
-			nbt.setTag(tagName, (NBTTagCompound) object);
-			break;
-		case NBT.TAG_INT_ARRAY:
-			nbt.setIntArray(tagName, (int[]) object);
-			break;
+			case NBT.TAG_END:
+				nbt.setBoolean(tagName, (Boolean) object);
+				break;
+			case NBT.TAG_BYTE:
+				nbt.setByte(tagName, (Byte) object);
+				break;
+			case NBT.TAG_SHORT:
+				nbt.setShort(tagName, (Short) object);
+				break;
+			case NBT.TAG_INT:
+				nbt.setInteger(tagName, (Integer) object);
+				break;
+			case NBT.TAG_LONG:
+				nbt.setLong(tagName, (Long) object);
+				break;
+			case NBT.TAG_FLOAT:
+				nbt.setFloat(tagName, (Float) object);
+				break;
+			case NBT.TAG_DOUBLE:
+				nbt.setDouble(tagName, (Double) object);
+				break;
+			case NBT.TAG_BYTE_ARRAY:
+				nbt.setByteArray(tagName, (byte[]) object);
+				break;
+			case NBT.TAG_STRING:
+				nbt.setString(tagName, (String) object);
+				break;
+			case NBT.TAG_LIST:
+				nbt.setTag(tagName, (NBTBase) object);
+				break;
+			case NBT.TAG_COMPOUND:
+				nbt.setTag(tagName, (NBTTagCompound) object);
+				break;
+			case NBT.TAG_INT_ARRAY:
+				nbt.setIntArray(tagName, (int[]) object);
+				break;
 		}
-		return nbt;
 	}
 
 	public static Object readNBTBase(NBTTagCompound nbt, int type, String tagName) {
 		switch (type) {
-		case NBT.TAG_END:
-			return nbt.getBoolean(tagName);
-		case NBT.TAG_BYTE:
-			return nbt.getByte(tagName);
-		case NBT.TAG_SHORT:
-			return nbt.getShort(tagName);
-		case NBT.TAG_INT:
-			return nbt.getInteger(tagName);
-		case NBT.TAG_LONG:
-			return nbt.getLong(tagName);
-		case NBT.TAG_FLOAT:
-			return nbt.getFloat(tagName);
-		case NBT.TAG_DOUBLE:
-			return nbt.getDouble(tagName);
-		case NBT.TAG_BYTE_ARRAY:
-			return nbt.getByteArray(tagName);
-		case NBT.TAG_STRING:
-			return nbt.getString(tagName);
-		case NBT.TAG_COMPOUND:
-			return nbt.getTag(tagName);
-		case NBT.TAG_INT_ARRAY:
-			return nbt.getIntArray(tagName);
-		default:
-			return null;
+			case NBT.TAG_END:
+				return nbt.getBoolean(tagName);
+			case NBT.TAG_BYTE:
+				return nbt.getByte(tagName);
+			case NBT.TAG_SHORT:
+				return nbt.getShort(tagName);
+			case NBT.TAG_INT:
+				return nbt.getInteger(tagName);
+			case NBT.TAG_LONG:
+				return nbt.getLong(tagName);
+			case NBT.TAG_FLOAT:
+				return nbt.getFloat(tagName);
+			case NBT.TAG_DOUBLE:
+				return nbt.getDouble(tagName);
+			case NBT.TAG_BYTE_ARRAY:
+				return nbt.getByteArray(tagName);
+			case NBT.TAG_STRING:
+				return nbt.getString(tagName);
+			case NBT.TAG_COMPOUND:
+				return nbt.getTag(tagName);
+			case NBT.TAG_INT_ARRAY:
+				return nbt.getIntArray(tagName);
+			default:
+				return null;
 		}
 	}
 
 	public static void writeBufBase(ByteBuf buf, int type, Object object, String tagName) {
 		switch (type) {
-		case NBT.TAG_END:
-			buf.writeBoolean((Boolean) object);
-			return;
-		case NBT.TAG_BYTE:
-			buf.writeByte((Byte) object);
-			return;
-		case NBT.TAG_SHORT:
-			buf.writeShort((Short) object);
-			return;
-		case NBT.TAG_INT:
-			buf.writeInt((Integer) object);
-			return;
-		case NBT.TAG_LONG:
-			buf.writeLong((Long) object);
-			return;
-		case NBT.TAG_FLOAT:
-			buf.writeFloat((Float) object);
-			return;
-		case NBT.TAG_DOUBLE:
-			buf.writeDouble((Double) object);
-			return;
-		case NBT.TAG_BYTE_ARRAY:
-			Byte[] byteArray = (Byte[]) object;
-			buf.writeInt(byteArray.length);
-			for (Byte aByteArray : byteArray) {
-				buf.writeByte(aByteArray);
-			}
-			return;
-		case NBT.TAG_STRING:
-			ByteBufUtils.writeUTF8String(buf, (String) object);
-			return;
-		case NBT.TAG_LIST:
-			ByteBufUtils.writeTag(buf, (NBTTagCompound) object);
-			return;
-		case NBT.TAG_COMPOUND:
-			ByteBufUtils.writeTag(buf, (NBTTagCompound) object);
-			return;
-		case NBT.TAG_INT_ARRAY:
-			Integer[] intArray = (Integer[]) object;
-			buf.writeInt(intArray.length);
-			for (Integer anIntArray : intArray) {
-				buf.writeInt(anIntArray);
-			}
+			case NBT.TAG_END:
+				buf.writeBoolean((Boolean) object);
+				return;
+			case NBT.TAG_BYTE:
+				buf.writeByte((Byte) object);
+				return;
+			case NBT.TAG_SHORT:
+				buf.writeShort((Short) object);
+				return;
+			case NBT.TAG_INT:
+				buf.writeInt((Integer) object);
+				return;
+			case NBT.TAG_LONG:
+				buf.writeLong((Long) object);
+				return;
+			case NBT.TAG_FLOAT:
+				buf.writeFloat((Float) object);
+				return;
+			case NBT.TAG_DOUBLE:
+				buf.writeDouble((Double) object);
+				return;
+			case NBT.TAG_BYTE_ARRAY:
+				byte[] byteArray = (byte[]) object;
+				buf.writeInt(byteArray.length);
+				for (byte b : byteArray) {
+					buf.writeByte(b);
+				}
+				return;
+			case NBT.TAG_STRING:
+				ByteBufUtils.writeUTF8String(buf, (String) object);
+				return;
+			case NBT.TAG_LIST:
+			case NBT.TAG_COMPOUND:
+				ByteBufUtils.writeTag(buf, (NBTTagCompound) object);
+				return;
+			case NBT.TAG_INT_ARRAY:
+				int[] intArray = (int[]) object;
+				buf.writeInt(intArray.length);
+				for (int i : intArray) {
+					buf.writeInt(i);
+				}
+				return;
 		}
 	}
 
 	public static Object readBufBase(ByteBuf buf, int type, String tagName) {
 		switch (type) {
-		case NBT.TAG_END:
-			return buf.readBoolean();
-		case NBT.TAG_BYTE:
-			return buf.readByte();
-		case NBT.TAG_SHORT:
-			return buf.readShort();
-		case NBT.TAG_INT:
-			return buf.readInt();
-		case NBT.TAG_LONG:
-			return buf.readLong();
-		case NBT.TAG_FLOAT:
-			return buf.readFloat();
-		case NBT.TAG_DOUBLE:
-			return buf.readDouble();
-		case NBT.TAG_BYTE_ARRAY:
-			int byteArraySize = buf.readInt();
-			byte[] byteArray = new byte[byteArraySize];
-			for (int i = 0; i < byteArray.length; i++) {
-				byteArray[i] = buf.readByte();
-			}
-			return byteArray;
-		case NBT.TAG_STRING:
-			return ByteBufUtils.readUTF8String(buf);
-		case NBT.TAG_LIST:
-		case NBT.TAG_COMPOUND:
-			return ByteBufUtils.readTag(buf);
-		case NBT.TAG_INT_ARRAY:
-			int intArraySize = buf.readInt();
-			int[] intArray = new int[intArraySize];
-			for (int i = 0; i < intArray.length; i++) {
-				intArray[i] = buf.readInt();
-			}
-			return intArray;
-		default:
-			return null;
+			case NBT.TAG_END:
+				return buf.readBoolean();
+			case NBT.TAG_BYTE:
+				return buf.readByte();
+			case NBT.TAG_SHORT:
+				return buf.readShort();
+			case NBT.TAG_INT:
+				return buf.readInt();
+			case NBT.TAG_LONG:
+				return buf.readLong();
+			case NBT.TAG_FLOAT:
+				return buf.readFloat();
+			case NBT.TAG_DOUBLE:
+				return buf.readDouble();
+			case NBT.TAG_BYTE_ARRAY:
+				int byteArraySize = buf.readInt();
+				byte[] byteArray = new byte[byteArraySize];
+				for (int i = 0; i < byteArray.length; i++) {
+					byteArray[i] = buf.readByte();
+				}
+				return byteArray;
+			case NBT.TAG_STRING:
+				return ByteBufUtils.readUTF8String(buf);
+			case NBT.TAG_LIST:
+			case NBT.TAG_COMPOUND:
+				return ByteBufUtils.readTag(buf);
+			case NBT.TAG_INT_ARRAY:
+				int intArraySize = buf.readInt();
+				int[] intArray = new int[intArraySize];
+				for (int i = 0; i < intArray.length; i++) {
+					intArray[i] = buf.readInt();
+				}
+				return intArray;
+			default:
+				return null;
 		}
 	}
 }

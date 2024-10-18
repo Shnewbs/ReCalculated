@@ -1,6 +1,6 @@
 package sonar.core.handlers.inventories.containers;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -22,7 +22,7 @@ public class ContainerSonar extends Container {
 			addSlotToContainer(new Slot(inventory, i, xPos + i * 18, yPos + 58));
 		}
 	}
-	
+
 	public void addInventoryWithLimiter(InventoryPlayer inventory, int xPos, int yPos, Item item) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 9; j++) {
@@ -39,7 +39,7 @@ public class ContainerSonar extends Container {
 	}
 
 	@Override
-	public boolean canInteractWith(@Nonnull EntityPlayer playerIn) {
+	public boolean canInteractWith(@Nonnull PlayerEntity playerIn) {
 		return true;
 	}
 }

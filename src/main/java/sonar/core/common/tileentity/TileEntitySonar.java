@@ -1,21 +1,20 @@
 package sonar.core.common.tileentity;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import sonar.core.SonarCore;
 import sonar.core.api.inventories.ISonarInventoryTile;
@@ -34,7 +33,7 @@ import sonar.core.utils.IWorldPosition;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class TileEntitySonar extends TileEntity implements ISyncableListener, ITickable, INBTSyncable, IWailaInfo, IWorldPosition {
+public class TileEntitySonar extends BlockEntity implements ISyncableListener, BlockEntityTicker<TileEntitySonar>, INBTSyncable, IWailaInfo, IWorldPosition {
 
 	public SyncableList syncList = new SyncableList(this);
 	protected boolean forceSync;
@@ -42,16 +41,20 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 	public boolean loaded = true;
 	public boolean isDirty;
 
+	public TileEntitySonar(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
+	}
+
 	public boolean isClient() {
-        return getWorld() == null ? false : getWorld().isRemote;
+		return level == null ? false : level.isClientSide;
 	}
 
 	public boolean isServer() {
-        return getWorld() == null ? true : !getWorld().isRemote;
+		return level == null ? true : !level.isClientSide;
 	}
 
 	@Override
-	public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
+	public boolean hasCapability(@Nonnull Capability<?> capability, Direction facing) {
 		if (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY == capability && this instanceof ISonarInventoryTile) {
 			return true;
 		}
@@ -59,7 +62,7 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 	}
 
 	@Override
-	public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
+	public <T> T getCapability(@Nonnull Capability<T> capability, Direction facing) {
 		if (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY == capability && this instanceof ISonarInventoryTile) {
 			return (T) ((ISonarInventoryTile) this).inv().getItemHandler(facing);
 		}
@@ -68,7 +71,7 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 
 	public void onFirstTick() {
 		// this.markBlockForUpdate();
-		// markDirty();
+		// setChanged();
 	}
 
 	@Override
@@ -80,60 +83,58 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt) {
-		super.readFromNBT(nbt);
+	public void load(CompoundTag nbt) {
+		super.load(nbt);
 		readData(nbt, SyncType.SAVE);
 	}
 
-	@Nonnull
-    @Override
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-		super.writeToNBT(nbt);
-		writeData(nbt, SyncType.SAVE);
-		return nbt;
+	@Override
+	protected void saveAdditional(CompoundTag tag) {
+		super.saveAdditional(tag);
+		writeData(tag, SyncType.SAVE);
 	}
-	
-	/**things like inventories are generally only sent with SyncType.SAVE*/
-	public SyncType getUpdateTagType(){
+
+	/** things like inventories are generally only sent with SyncType.SAVE */
+	public SyncType getUpdateTagType() {
 		return SyncType.SYNC_OVERRIDE;
 	}
-	
+
 	@Nonnull
-    @Override
-	public NBTTagCompound getUpdateTag() {
+	@Override
+	public CompoundTag getUpdateTag() {
 		return writeData(super.getUpdateTag(), getUpdateTagType());
 	}
 
 	@Override
-	public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
+	public void handleUpdateTag(CompoundTag tag) {
 		super.handleUpdateTag(tag);
 		readData(tag, getUpdateTagType());
 	}
 
 	@Override
-	public final SPacketUpdateTileEntity getUpdatePacket() {
-		NBTTagCompound tag = writeToNBT(new NBTTagCompound());
-		return new SPacketUpdateTileEntity(pos, 0, tag);
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		CompoundTag tag = saveWithFullMetadata();
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
-		readFromNBT(packet.getNbtCompound());
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+		load(pkt.getTag());
 	}
 
 	@Override
-	public void validate() {
-		super.validate();
+	public void setRemoved() {
+		super.setRemoved();
 		coords = new BlockCoords(this);
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
+	public void readData(CompoundTag nbt, SyncType type) {
 		NBTHelper.readSyncParts(nbt, type, syncList);
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+	public CompoundTag writeData(CompoundTag nbt, SyncType type) {
 		if (forceSync && type == SyncType.DEFAULT_SYNC) {
 			type = SyncType.SYNC_OVERRIDE;
 			forceSync = false;
@@ -143,54 +144,52 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public List<String> getWailaInfo(List<String> currenttip, IBlockState state) {
+	public List<String> getWailaInfo(List<String> currenttip, BlockState state) {
 		return currenttip;
 	}
 
 	public void forceNextSync() {
 		forceSync = true;
-		markDirty();
+		setChanged();
 	}
 
-	public void onSyncPacketRequested(EntityPlayer player) {}
+	public void onSyncPacketRequested(Player player) {}
 
 	public void requestSyncPacket() {
-		SonarCore.network.sendToServer(new PacketRequestSync(pos));
+		SonarCore.network.sendToServer(new PacketRequestSync(worldPosition));
 	}
 
-	public void sendSyncPacket(EntityPlayer player) {
+	public void sendSyncPacket(Player player) {
 		sendSyncPacket(player, SyncType.SYNC_OVERRIDE);
 	}
 
-	public void sendSyncPacket(EntityPlayer player, SyncType type) {
-		if (world.isRemote) {
+	public void sendSyncPacket(Player player, SyncType type) {
+		if (level.isClientSide) {
 			return;
 		}
-		if (player instanceof EntityPlayerMP) {
-			NBTTagCompound tag = new NBTTagCompound();
+		if (player instanceof ServerPlayer) {
+			CompoundTag tag = new CompoundTag();
 			writeData(tag, type);
-			if (!tag.hasNoTags()) {
-				SonarCore.network.sendTo(createSyncPacket(tag, type), (EntityPlayerMP) player);
+			if (!tag.isEmpty()) {
+				SonarCore.network.sendTo(createSyncPacket(tag, type), (ServerPlayer) player);
 			}
 		}
 	}
 
 	public IMessage createRequestPacket() {
-		return new PacketRequestSync(pos);
+		return new PacketRequestSync(worldPosition);
 	}
 
-	public IMessage createSyncPacket(NBTTagCompound tag, SyncType type) {
-		return new PacketTileSync(pos, tag, type);
+	public IMessage createSyncPacket(CompoundTag tag, SyncType type) {
+		return new PacketTileSync(worldPosition, tag, type);
 	}
 
 	public void markBlockForUpdate() {
 		if (isServer()) {
-			markDirty();
+			setChanged();
 			SonarCore.sendFullSyncAroundWithRenderUpdate(this, 128);
 		} else {
-			getWorld().markBlockRangeForRenderUpdate(pos, pos);
-			getWorld().getChunkFromBlockCoords(getPos()).setModified(true);
+			level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
 		}
 	}
 
@@ -198,24 +197,22 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 		return false;
 	}
 
-	public void openFlexibleGui(EntityPlayer player, int id) {
-		SonarCore.instance.guiHandler.openBasicTile(false, player, world, pos, id);
+	public void openFlexibleGui(Player player, int id) {
+		SonarCore.instance.guiHandler.openBasicTile(false, player, level, worldPosition, id);
 	}
 
-	public void changeFlexibleGui(EntityPlayer player, int id) {
-		SonarCore.instance.guiHandler.openBasicTile(true, player, world, pos, id);
+	public void changeFlexibleGui(Player player, int id) {
+		SonarCore.instance.guiHandler.openBasicTile(true, player, level, worldPosition, id);
 	}
-	
+
 	@Override
-	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
 		return maxRender() ? 65536.0D : super.getMaxRenderDistanceSquared();
 	}
 
 	@Nonnull
-    @Override
-	@SideOnly(Side.CLIENT)
-	public AxisAlignedBB getRenderBoundingBox() {
+	@Override
+	public AABB getRenderBoundingBox() {
 		return maxRender() ? INFINITE_EXTENT_AABB : super.getRenderBoundingBox();
 	}
 
@@ -228,19 +225,19 @@ public class TileEntitySonar extends TileEntity implements ISyncableListener, IT
 	}
 
 	@Override
-	public void update() {
+	public void tick(Level level, BlockPos pos, BlockState state, TileEntitySonar blockEntity) {
 		if (loaded) {
 			onFirstTick();
-			loaded = !loaded;
+			loaded = false;
 		}
 		if (isDirty) {
-			this.markDirty();
-			isDirty = !isDirty;
+			this.setChanged();
+			isDirty = false;
 		}
 	}
 
 	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+	public boolean shouldRefresh(Level level, BlockPos pos, BlockState oldState, BlockState newState) {
 		return oldState.getBlock() != newState.getBlock();
 	}
 }

@@ -33,13 +33,13 @@ public class SonarEnergyItem extends SonarItem implements ISonarEnergyItem, IEne
 
 	@Override
 	@SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag par4) {
-        super.addInformation(stack, world, list, par4);
+	public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag par4) {
+		super.addInformation(stack, world, list, par4);
 		if (stack != null)
 			list.add(FontHelper.translate("energy.stored") + ": " + getEnergyLevel(stack) + " RF");
 	}
 
-	/////* SONAR *//////	
+	///// * SONAR * /////
 	@Override
 	public long addEnergy(ItemStack stack, long maxReceive, ActionType action) {
 		return storage.setItemStack(stack).getInternalWrapper().addEnergy(maxReceive, action);
@@ -47,7 +47,7 @@ public class SonarEnergyItem extends SonarItem implements ISonarEnergyItem, IEne
 
 	@Override
 	public long removeEnergy(ItemStack stack, long maxExtract, ActionType action) {
-		return storage.setItemStack(stack).getInternalWrapper().removeEnergy(maxExtract,  action);
+		return storage.setItemStack(stack).getInternalWrapper().removeEnergy(maxExtract, action);
 	}
 
 	@Override
@@ -60,27 +60,27 @@ public class SonarEnergyItem extends SonarItem implements ISonarEnergyItem, IEne
 		return storage.setItemStack(stack).getFullCapacity();
 	}
 
-	/////* CoFH *//////
+	///// * CoFH * /////
 	@Override
-    @Optional.Method(modid = "redstoneflux")
+	@Optional.Method(modid = "redstoneflux")
 	public int receiveEnergy(ItemStack container, int maxReceive, boolean simulate) {
 		return storage.setItemStack(container).getInternalWrapper().receiveEnergy(maxReceive, simulate);
 	}
 
 	@Override
-    @Optional.Method(modid = "redstoneflux")
+	@Optional.Method(modid = "redstoneflux")
 	public int extractEnergy(ItemStack container, int maxExtract, boolean simulate) {
 		return storage.setItemStack(container).getInternalWrapper().extractEnergy(maxExtract, simulate);
 	}
 
 	@Override
-    @Optional.Method(modid = "redstoneflux")
+	@Optional.Method(modid = "redstoneflux")
 	public int getEnergyStored(ItemStack container) {
 		return storage.setItemStack(container).getInternalWrapper().getEnergyStored();
 	}
 
 	@Override
-    @Optional.Method(modid = "redstoneflux")
+	@Optional.Method(modid = "redstoneflux")
 	public int getMaxEnergyStored(ItemStack container) {
 		return storage.setItemStack(container).getInternalWrapper().getMaxEnergyStored();
 	}

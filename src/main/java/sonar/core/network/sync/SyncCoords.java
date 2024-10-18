@@ -1,7 +1,7 @@
 package sonar.core.network.sync;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
 import sonar.core.api.utils.BlockCoords;
 import sonar.core.helpers.NBTHelper.SyncType;
 
@@ -44,18 +44,18 @@ public class SyncCoords extends SyncPart {
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
 		if (c != null) {
-			NBTTagCompound infoTag = new NBTTagCompound();
+			CompoundNBT infoTag = new CompoundNBT(); // Updated to use CompoundNBT
 			BlockCoords.writeToNBT(infoTag, c);
-			nbt.setTag(this.getTagName(), infoTag);
+			nbt.put(this.getTagName(), infoTag); // Updated to use put
 		}
 		return nbt;
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(getTagName()))
-			this.c = BlockCoords.readFromNBT(nbt.getCompoundTag(this.getTagName()));
+	public void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		if (nbt.contains(getTagName())) // Updated to use contains
+			this.c = BlockCoords.readFromNBT(nbt.getCompound(getTagName())); // Updated to use getCompound
 	}
 }

@@ -1,10 +1,10 @@
 package sonar.core.handlers.inventories.handling;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -26,59 +26,59 @@ public class ItemTransferHelper {
     public static Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = null;
 
     @Nullable
-    public static IItemHandler getItemHandlerOffset(World world, BlockPos pos, EnumFacing face){
+    public static IItemHandler getItemHandlerOffset(World world, BlockPos pos, Direction face) {
         return getItemHandler(world, pos.offset(face), face.getOpposite());
     }
 
     @Nullable
-    public static IItemHandler getItemHandler(World world, BlockPos pos, EnumFacing face){
+    public static IItemHandler getItemHandler(World world, BlockPos pos, Direction face) {
         TileEntity tile = world.getTileEntity(pos);
         return getItemHandler(tile, face);
     }
 
     @Nullable
-    public static IItemHandler getItemHandler(ICapabilityProvider provider, EnumFacing face){
-        if(provider != null && provider.hasCapability(ITEM_HANDLER_CAPABILITY, face)){
+    public static IItemHandler getItemHandler(ICapabilityProvider provider, Direction face) {
+        if (provider != null && provider.hasCapability(ITEM_HANDLER_CAPABILITY, face)) {
             return provider.getCapability(ITEM_HANDLER_CAPABILITY, face);
         }
         return null;
     }
 
     @Nonnull
-    public static IItemHandler getMainInventoryHandler(EntityPlayer player){
-        return getItemHandler(player, EnumFacing.UP);
+    public static IItemHandler getMainInventoryHandler(PlayerEntity player) {
+        return getItemHandler(player, Direction.UP);
     }
 
     @Nonnull
-    public static IItemHandler getEquipmentInventoryHandler(EntityPlayer player){
-        return getItemHandler(player, EnumFacing.NORTH);
+    public static IItemHandler getEquipmentInventoryHandler(PlayerEntity player) {
+        return getItemHandler(player, Direction.NORTH);
     }
 
     @Nonnull
-    public static IItemHandler getJoinedInventoryHandler(EntityPlayer player){
+    public static IItemHandler getJoinedInventoryHandler(PlayerEntity player) {
         return getItemHandler(player, null);
     }
 
-    /**if the handler is an changeable handler this will ensure the current handler is valid, also performs a null check*/
-    public static boolean isInvalidItemHandler(IItemHandler handler){
-        return handler == null || (handler instanceof SimpleChangeableHandler && !((SimpleChangeableHandler)handler).isValid());
+    /** If the handler is a changeable handler this will ensure the current handler is valid, also performs a null check */
+    public static boolean isInvalidItemHandler(IItemHandler handler) {
+        return handler == null || (handler instanceof SimpleChangeableHandler && !((SimpleChangeableHandler) handler).isValid());
     }
 
-    public static void doSimpleTransfer(Iterable<IItemHandler> sources, Iterable<IItemHandler> destinations, Predicate<ItemStack> filter, int maximum){
+    public static void doSimpleTransfer(Iterable<IItemHandler> sources, Iterable<IItemHandler> destinations, Predicate<ItemStack> filter, int maximum) {
         int usage = maximum == -1 ? Integer.MAX_VALUE : maximum;
-        for(IItemHandler source : sources){
-            if(isInvalidItemHandler(source)){
+        for (IItemHandler source : sources) {
+            if (isInvalidItemHandler(source)) {
                 continue;
             }
-            for(int i = 0; i < source.getSlots(); i++){
+            for (int i = 0; i < source.getSlots(); i++) {
                 ItemStack extract = source.extractItem(i, Math.min(usage, source.getSlotLimit(i)), true);
-                if(!extract.isEmpty() && filter.test(extract)){
-                    int count_before = extract.getCount();
+                if (!extract.isEmpty() && filter.test(extract)) {
+                    int countBefore = extract.getCount();
                     extract = doInsert(extract, destinations);
-                    int count_change = count_before - extract.getCount();
-                    usage -= count_change;
-                    source.extractItem(i, Math.min(count_change, source.getSlotLimit(i)), false);
-                    if(usage <= 0){
+                    int countChange = countBefore - extract.getCount();
+                    usage -= countChange;
+                    source.extractItem(i, Math.min(countChange, source.getSlotLimit(i)), false);
+                    if (usage <= 0) {
                         return;
                     }
                 }
@@ -86,70 +86,69 @@ public class ItemTransferHelper {
         }
     }
 
-    /**unlimited transfer*/
-    public static void doSimpleTransfer(Iterable<IItemHandler> sources, Iterable<IItemHandler> destinations, Predicate<ItemStack> filter){
-        for(IItemHandler source : sources){
-            if(isInvalidItemHandler(source)){
+    /** Unlimited transfer */
+    public static void doSimpleTransfer(Iterable<IItemHandler> sources, Iterable<IItemHandler> destinations, Predicate<ItemStack> filter) {
+        for (IItemHandler source : sources) {
+            if (isInvalidItemHandler(source)) {
                 continue;
             }
-            for(int i = 0; i < source.getSlots(); i++){
+            for (int i = 0; i < source.getSlots(); i++) {
                 ItemStack extract = source.extractItem(i, source.getSlotLimit(i), true);
-                if(!extract.isEmpty() && filter.test(extract)){
-                    int count_before = extract.getCount();
+                if (!extract.isEmpty() && filter.test(extract)) {
+                    int countBefore = extract.getCount();
                     extract = doInsert(extract, destinations);
-                    int count_change = count_before - extract.getCount();
-                    source.extractItem(i, Math.min(count_change, source.getSlotLimit(i)), false);
+                    source.extractItem(i, Math.min(countBefore, source.getSlotLimit(i)), false);
                 }
             }
         }
     }
 
-    public static void doTransferFromSlot(IItemHandler source, Iterable<IItemHandler> destinations, int sourceSlot){
-        if(isInvalidItemHandler(source)){
+    public static void doTransferFromSlot(IItemHandler source, Iterable<IItemHandler> destinations, int sourceSlot) {
+        if (isInvalidItemHandler(source)) {
             return;
         }
         ItemStack extract = source.extractItem(sourceSlot, source.getSlotLimit(sourceSlot), true);
-        if(!extract.isEmpty()){
-            int count_before = extract.getCount();
+        if (!extract.isEmpty()) {
+            int countBefore = extract.getCount();
             extract = doInsert(extract, destinations);
-            int count_change = count_before - extract.getCount();
-            source.extractItem(sourceSlot, Math.min(count_change, source.getSlotLimit(sourceSlot)), false);
+            int countChange = countBefore - extract.getCount();
+            source.extractItem(sourceSlot, Math.min(countChange, source.getSlotLimit(sourceSlot)), false);
         }
     }
 
-    /**inserts the given stack into the various item handlers
-     * the inserted stack will be modified*/
-    public static ItemStack doInsert(ItemStack insert, Iterable<IItemHandler> destinations){
-        for(IItemHandler destination : destinations){
-            if(isInvalidItemHandler(destination)){
+    /** Inserts the given stack into the various item handlers
+     * The inserted stack will be modified */
+    public static ItemStack doInsert(ItemStack insert, Iterable<IItemHandler> destinations) {
+        for (IItemHandler destination : destinations) {
+            if (isInvalidItemHandler(destination)) {
                 continue;
             }
             insert = ItemHandlerHelper.insertItemStacked(destination, insert, false);
-            if(insert.isEmpty()){
+            if (insert.isEmpty()) {
                 return insert;
             }
         }
         return insert;
     }
 
-    public static ItemStack doExtract(Iterable<IItemHandler> sources, Predicate<ItemStack> filter, int maximum){
+    public static ItemStack doExtract(Iterable<IItemHandler> sources, Predicate<ItemStack> filter, int maximum) {
         ItemStack extracted = ItemStack.EMPTY;
-        SOURCES: for(IItemHandler source : sources){
-            if(isInvalidItemHandler(source)){
+        SOURCES: for (IItemHandler source : sources) {
+            if (isInvalidItemHandler(source)) {
                 continue;
             }
-            for(int i = 0; i < source.getSlots(); i++) {
+            for (int i = 0; i < source.getSlots(); i++) {
                 ItemStack extract = source.extractItem(i, Math.min(source.getSlotLimit(i), maximum - extracted.getCount()), true);
-                if(!extract.isEmpty() && filter.test(extract)){
-                   extract = source.extractItem(i, extract.getCount(), false);
-                   if(extracted.isEmpty()){
-                       extracted = extract;
-                   }else{
-                       extracted.grow(extract.getCount());
-                   }
-                   if(extracted.getCount() >= maximum){
-                       break SOURCES;
-                   }
+                if (!extract.isEmpty() && filter.test(extract)) {
+                    extract = source.extractItem(i, extract.getCount(), false);
+                    if (extracted.isEmpty()) {
+                        extracted = extract;
+                    } else {
+                        extracted.grow(extract.getCount());
+                    }
+                    if (extracted.getCount() >= maximum) {
+                        break SOURCES;
+                    }
                 }
             }
         }
@@ -211,5 +210,4 @@ public class ItemTransferHelper {
         }
         list.add(stack);
     }
-
 }

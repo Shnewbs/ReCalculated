@@ -15,38 +15,43 @@ import java.util.List;
 public class RayTraceHelper {
 
 	@Nonnull
-    public static Pair<RayTraceResult, AxisAlignedBB> rayTraceBoxes(BlockPos pos, Vec3d start, Vec3d end, List<AxisAlignedBB> boxes) {
-		Vec3d vec3d = start.subtract((double) pos.getX(), (double) pos.getY(), (double) pos.getZ());
-		Vec3d vec3d1 = end.subtract((double) pos.getX(), (double) pos.getY(), (double) pos.getZ());
-		RayTraceResult raytraceresult = null;
+	public static Pair<RayTraceResult, AxisAlignedBB> rayTraceBoxes(BlockPos pos, Vec3d start, Vec3d end, List<AxisAlignedBB> boxes) {
+		Vec3d vecStart = start.subtract(pos.getX(), pos.getY(), pos.getZ());
+		Vec3d vecEnd = end.subtract(pos.getX(), pos.getY(), pos.getZ());
+		RayTraceResult rayTraceResult = null;
 		AxisAlignedBB currentBB = null;
-		for (AxisAlignedBB bb : boxes) {
-			raytraceresult = bb.calculateIntercept(vec3d, vec3d1);
-			if (raytraceresult != null) {
-				currentBB = bb;
+
+		for (AxisAlignedBB box : boxes) {
+			rayTraceResult = box.calculateIntercept(vecStart, vecEnd);
+			if (rayTraceResult != null) {
+				currentBB = box;
 				break;
 			}
-
 		}
-		return raytraceresult == null ? new Pair(null, null) : new Pair(new RayTraceResult(raytraceresult.hitVec.addVector((double) pos.getX(), (double) pos.getY(), (double) pos.getZ()), raytraceresult.sideHit, pos), currentBB);
+
+		if (rayTraceResult == null) {
+			return new Pair<>(null, null);
+		}
+
+		Vec3d hitVec = rayTraceResult.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ());
+		return new Pair<>(new RayTraceResult(hitVec, rayTraceResult.sideHit, pos), currentBB);
 	}
 
 	public static double getBlockReach(EntityPlayer player) {
-		double blockReachDistance = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue();
-		return blockReachDistance + 1;
+		return player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue() + 1;
 	}
 
-	public static Pair<Vec3d, Vec3d> getPlayerLookVec(EntityPlayer entity) {
-		double length = getBlockReach(entity);
-		Vec3d startPos = new Vec3d(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
-		Vec3d endPos = startPos.add(new Vec3d(entity.getLookVec().x * length, entity.getLookVec().y * length, entity.getLookVec().z * length));
-		return new Pair(startPos, endPos);
+	public static Pair<Vec3d, Vec3d> getPlayerLookVec(EntityPlayer player) {
+		double reachDistance = getBlockReach(player);
+		Vec3d startPos = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+		Vec3d endPos = startPos.add(player.getLookVec().scale(reachDistance));
+		return new Pair<>(startPos, endPos);
 	}
 
 	public static Pair<Vec3d, Vec3d> getStandardLookVec(Entity entity, double reach) {
 		Vec3d startPos = new Vec3d(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
-		Vec3d endPos = startPos.add(new Vec3d(entity.getLookVec().x * reach, entity.getLookVec().y * reach, entity.getLookVec().z * reach));
-		return new Pair(startPos, endPos);
+		Vec3d endPos = startPos.add(entity.getLookVec().scale(reach));
+		return new Pair<>(startPos, endPos);
 	}
 
 	public static RayTraceResult getRayTraceEyes(EntityPlayer player) {

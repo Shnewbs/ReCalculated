@@ -6,9 +6,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public interface IBlockStateSpecial<T extends TileEntity, S extends IBlockState> extends IBlockState {
-	
+
     T getTileEntity(World world);
-	
+
     T getTileEntity();
 
     BlockPos getPos();

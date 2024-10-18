@@ -1,6 +1,6 @@
 package sonar.core.handlers.energy;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.energy.IItemEnergyHandler;
 import sonar.core.api.utils.ActionType;
@@ -14,7 +14,7 @@ public class ItemHandlingWrapper implements IEnergyHandler {
     public boolean canRead;
     public EnergyType type;
 
-    public ItemHandlingWrapper(ItemStack stack, IItemEnergyHandler handler){
+    public ItemHandlingWrapper(ItemStack stack, IItemEnergyHandler handler) {
         this.stack = stack;
         this.handler = handler;
         this.canAdd = handler.canAddEnergy(stack);
@@ -29,17 +29,17 @@ public class ItemHandlingWrapper implements IEnergyHandler {
     }
 
     @Override
-    public EnergyType getEnergyType(){
+    public EnergyType getEnergyType() {
         return type;
     }
 
     @Override
-    public boolean canAddEnergy(){
+    public boolean canAddEnergy() {
         return canAdd;
     }
 
     @Override
-    public boolean canRemoveEnergy(){
+    public boolean canRemoveEnergy() {
         return canRemove;
     }
 
@@ -54,12 +54,12 @@ public class ItemHandlingWrapper implements IEnergyHandler {
     }
 
     @Override
-    public long addEnergy(long add, ActionType actionType){
+    public long addEnergy(long add, ActionType actionType) {
         return handler.addEnergy(add, stack, actionType);
     }
 
     @Override
-    public long removeEnergy(long remove, ActionType actionType){
+    public long removeEnergy(long remove, ActionType actionType) {
         return handler.removeEnergy(remove, stack, actionType);
     }
 

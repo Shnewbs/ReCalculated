@@ -14,49 +14,50 @@ import java.util.List;
 
 public class SonarAddRecipe<HELPER extends RecipeHelperV2> implements IAction {
 
-    public HELPER recipes;
-    public List<ISonarRecipeObject> sonar_inputs = new ArrayList<>();
-    public List<ISonarRecipeObject> sonar_outputs = new ArrayList<>();
-    public boolean valid = true;
+    private final HELPER recipes;
+    private final List<ISonarRecipeObject> sonarInputs = new ArrayList<>();
+    private final List<ISonarRecipeObject> sonarOutputs = new ArrayList<>();
+    private boolean valid = true;
 
-    public SonarAddRecipe(HELPER recipes, List<IIngredient> inputs, List<IIngredient> outputs){
+    public SonarAddRecipe(HELPER recipes, List<IIngredient> inputs, List<IIngredient> outputs) {
         this.recipes = recipes;
-        for(IIngredient i : inputs){
-            ISonarRecipeObject obj = CraftTweakerHelper.convertItemIngredient(i);
-            if(obj == null){
+        for (IIngredient ingredient : inputs) {
+            ISonarRecipeObject obj = CraftTweakerHelper.convertItemIngredient(ingredient);
+            if (obj == null) {
                 valid = false;
-                CraftTweakerAPI.logError(String.format("%s: INVALID INPUT: %s", recipes.getRecipeID(), i));
-            }else{
-                sonar_inputs.add(obj);
+                CraftTweakerAPI.logError(String.format("%s: INVALID INPUT: %s", recipes.getRecipeID(), ingredient));
+            } else {
+                sonarInputs.add(obj);
             }
         }
-        for(IIngredient i : outputs){
-            ISonarRecipeObject obj = CraftTweakerHelper.convertItemIngredient(i);
-            if(obj == null){
+        for (IIngredient ingredient : outputs) {
+            ISonarRecipeObject obj = CraftTweakerHelper.convertItemIngredient(ingredient);
+            if (obj == null) {
                 valid = false;
-                CraftTweakerAPI.logError(String.format("%s: INVALID OUTPUT : %s", recipes.getRecipeID(), i));
-            }else{
-                sonar_outputs.add(obj);
+                CraftTweakerAPI.logError(String.format("%s: INVALID OUTPUT: %s", recipes.getRecipeID(), ingredient));
+            } else {
+                sonarOutputs.add(obj);
             }
         }
     }
 
     @Override
     public void apply() {
-        if(valid){
+        if (valid) {
             boolean isShapeless = !(recipes instanceof DefinedRecipeHelper) || ((DefinedRecipeHelper) recipes).shapeless;
-            recipes.addRecipe(recipes.buildRecipe(sonar_inputs, sonar_outputs, new ArrayList<>(), isShapeless));
+            recipes.addRecipe(recipes.buildRecipe(sonarInputs, sonarOutputs, new ArrayList<>(), isShapeless));
         }
     }
 
     @Override
     public String describe() {
-        return String.format("Adding %s recipe (%s = %s)", recipes.getRecipeID(), RecipeHelperV2.getValuesFromList(sonar_inputs), RecipeHelperV2.getValuesFromList(sonar_outputs));
+        return String.format("Adding %s recipe (%s = %s)", recipes.getRecipeID(),
+                RecipeHelperV2.getValuesFromList(sonarInputs), RecipeHelperV2.getValuesFromList(sonarOutputs));
     }
 
     public static class Value extends SonarAddRecipe<ValueHelperV2> {
 
-        public int recipeValue;
+        private final int recipeValue;
 
         public Value(ValueHelperV2 helper, List<IIngredient> inputs, List<IIngredient> outputs, int recipeValue) {
             super(helper, inputs, outputs);
@@ -65,8 +66,8 @@ public class SonarAddRecipe<HELPER extends RecipeHelperV2> implements IAction {
 
         @Override
         public void apply() {
-            if(valid){
-                recipes.addRecipe(recipes.buildRecipe(sonar_inputs, sonar_outputs, Lists.newArrayList(recipeValue), recipes.shapeless));
+            if (valid) {
+                recipes.addRecipe(recipes.buildRecipe(sonarInputs, sonarOutputs, Lists.newArrayList(recipeValue), recipes.shapeless));
             }
         }
     }

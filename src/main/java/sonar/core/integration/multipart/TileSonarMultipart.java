@@ -14,7 +14,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import sonar.core.SonarCore;
 import sonar.core.api.IFlexibleGui;
 import sonar.core.common.tileentity.TileEntitySonar;
@@ -24,7 +23,7 @@ import sonar.core.utils.IWorldTile;
 
 public class TileSonarMultipart extends TileEntitySonar implements IMultipartTile, ITickable, IWorldTile {
 
-	public IPartInfo info;
+	private IPartInfo info;
 
 	public Optional<IPartInfo> getInfo() {
 		return Optional.ofNullable(info);
@@ -33,7 +32,7 @@ public class TileSonarMultipart extends TileEntitySonar implements IMultipartTil
 	@Override
 	public void invalidate() {
 		super.invalidate();
-		loaded = true; // Multiparts are added again, this makes sure onFirstTick is called again
+		loaded = true; // Ensures onFirstTick is called again when multiparts are added
 	}
 
 	public void setPartInfo(IPartInfo info) {
@@ -44,8 +43,7 @@ public class TileSonarMultipart extends TileEntitySonar implements IMultipartTil
 		return info == null ? -1 : SlotRegistry.INSTANCE.getSlotID(info.getSlot());
 	}
 
-	//// UPDATE \\\\
-
+	// UPDATE
 	public void markBlockForUpdate() {
 		if (isServer()) {
 			markDirty();
@@ -56,8 +54,7 @@ public class TileSonarMultipart extends TileEntitySonar implements IMultipartTil
 		}
 	}
 
-	//// PACKETS \\\\
-
+	// PACKETS
 	public IMessage createSyncPacket(NBTTagCompound tag, SyncType type) {
 		return SonarMultipartHelper.buildSyncPacket(this, tag, type);
 	}
@@ -87,7 +84,7 @@ public class TileSonarMultipart extends TileEntitySonar implements IMultipartTil
 		}
 	}
 
-	/** opens a GUI using {@link IFlexibleGui} */
+	/** Opens a GUI using {@link IFlexibleGui} */
 	public final void openFlexibleGui(EntityPlayer player, int id) {
 		SonarCore.instance.guiHandler.openBasicMultipart(false, getSlotID(), player, getWorld(), getPos(), id);
 	}
@@ -96,7 +93,7 @@ public class TileSonarMultipart extends TileEntitySonar implements IMultipartTil
 		SonarCore.instance.guiHandler.openBasicMultipart(true, getSlotID(), player, getWorld(), getPos(), id);
 	}
 
-	//// CAPABILTIES \\\\
+	// CAPABILITIES
 	@Override
 	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
 		if (capability == MCMPCapabilities.MULTIPART_TILE) {

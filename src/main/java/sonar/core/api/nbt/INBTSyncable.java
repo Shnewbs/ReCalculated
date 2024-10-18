@@ -1,22 +1,28 @@
 package sonar.core.api.nbt;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import sonar.core.helpers.NBTHelper.SyncType;
 
 /**
- * add a empty constructor if you need initialisation to work
+ * Interface for syncing objects with NBT data.
+ * Ensure an empty constructor if initialization is required.
  */
 public interface INBTSyncable {
 
     /**
-     * @param nbt  the tag you wish the data read the data from
-     * @param type the data type you are trying to sync
+     * Reads the data from the given NBT tag based on the sync type.
+     *
+     * @param nbt  The NBT tag to read data from.
+     * @param type The sync type used to identify the data being synced.
      */
-    void readData(NBTTagCompound nbt, SyncType type);
+    void readData(CompoundNBT nbt, SyncType type);
 
     /**
-     * @param nbt  the tag you wish to write the data to
-     * @param type the data type you are trying to sync
+     * Writes the data to the given NBT tag based on the sync type.
+     *
+     * @param nbt  The NBT tag to write data to.
+     * @param type The sync type used to identify the data being synced.
+     * @return The modified NBT tag.
      */
-    NBTTagCompound writeData(NBTTagCompound nbt, SyncType type);
+    CompoundNBT writeData(CompoundNBT nbt, SyncType type);
 }

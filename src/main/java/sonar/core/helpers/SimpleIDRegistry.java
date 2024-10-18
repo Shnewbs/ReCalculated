@@ -8,33 +8,39 @@ import java.util.List;
 
 public class SimpleIDRegistry<T extends IRegistryObject> extends SimpleRegistry<Integer, String> {
 
-    public List<T> objects = new ArrayList();
+    // List to hold registered objects
+    private final List<T> objects = new ArrayList<>();
 
-    public void register(T object){
+    // Method to register an object
+    public void register(T object) {
         objects.add(object);
         register(objects.size(), object.getName());
     }
 
-    /**don't modify the return*/
-    public List<T> getObjects(){
+    /**
+     * Returns the list of registered objects.
+     * Don't modify the returned list directly.
+     */
+    public List<T> getObjects() {
         return objects;
     }
 
     @Nullable
-    public T getObject(String name){
+    // Method to retrieve an object by its name
+    public T getObject(String name) {
         Integer id = getKey(name);
-        if(id != null){
-            return objects.get(id - 1);
+        if (id != null) {
+            return objects.get(id - 1); // ID is 1-based index
         }
-        return null;
+        return null; // Return null if the object is not found
     }
 
     @Nullable
-    public T getObject(int id){
-        if(id <= objects.size()) {
-            return objects.get(id - 1);
+    // Method to retrieve an object by its ID
+    public T getObject(int id) {
+        if (id > 0 && id <= objects.size()) { // Ensure ID is valid
+            return objects.get(id - 1); // ID is 1-based index
         }
-        return null;
+        return null; // Return null if the ID is invalid
     }
-
 }

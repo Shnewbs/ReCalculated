@@ -1,7 +1,8 @@
 package sonar.core.api.blocks;
 
 /**
- * implemented on blocks which can be dismantled by the Calculator wrench
+ * Interface implemented on blocks that can be dismantled by the Calculator wrench.
+ * This could be extended to add functionality for specific wrench mechanics.
  */
 public interface IWrench {
 }

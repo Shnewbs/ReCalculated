@@ -1,16 +1,19 @@
 package sonar.core.api.utils;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+/**
+ * Represents an interaction with a block, including hit position and interaction type.
+ */
 public class BlockInteraction {
 
 	public int side;
 	public float hitx, hity, hitz;
 	public BlockInteractionType type;
 
-	public BlockInteraction(EnumFacing side, float hitX, float hitY, float hitZ, BlockInteractionType interact) {
+	public BlockInteraction(Direction side, float hitX, float hitY, float hitZ, BlockInteractionType interact) {
 		this(side.ordinal(), hitX, hitY, hitZ, interact);
 	}
 
@@ -34,7 +37,7 @@ public class BlockInteraction {
 		ByteBufUtils.writeUTF8String(buf, type.name());
 	}
 
-	public EnumFacing getDir() {
-		return EnumFacing.getFront(side);
+	public Direction getDir() {
+		return Direction.from3DDataValue(side);
 	}
 }

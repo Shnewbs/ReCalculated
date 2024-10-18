@@ -4,8 +4,8 @@ import java.util.List;
 
 import mcjty.deepresonance.blocks.tank.TileTank;
 import mcjty.deepresonance.tanks.TankGrid;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
 import sonar.core.api.StorageSize;
 import sonar.core.api.asm.FluidHandler;
 import sonar.core.api.fluids.ISonarFluidHandler;
@@ -16,12 +16,12 @@ import sonar.core.handlers.fluids.FluidHelper;
 @FluidHandler(modid = "deepresonance", priority = -1)
 public class DeepResonanceTank implements ISonarFluidHandler {
     @Override
-    public boolean canHandleFluids(TileEntity tile, EnumFacing dir) {
+    public boolean canHandleFluids(BlockEntity tile, Direction dir) {
         return tile instanceof TileTank;
     }
 
     @Override
-    public StoredFluidStack addStack(StoredFluidStack add, TileEntity tile, EnumFacing dir, ActionType action) {
+    public StoredFluidStack addStack(StoredFluidStack add, BlockEntity tile, Direction dir, ActionType action) {
         TileTank tank = (TileTank) tile;
         TankGrid tanks = tank.getTank();
         if (tanks != null) {
@@ -31,7 +31,7 @@ public class DeepResonanceTank implements ISonarFluidHandler {
     }
 
     @Override
-    public StoredFluidStack removeStack(StoredFluidStack remove, TileEntity tile, EnumFacing dir, ActionType action) {
+    public StoredFluidStack removeStack(StoredFluidStack remove, BlockEntity tile, Direction dir, ActionType action) {
         TileTank tank = (TileTank) tile;
         TankGrid tanks = tank.getTank();
         if (tanks != null) {
@@ -41,7 +41,7 @@ public class DeepResonanceTank implements ISonarFluidHandler {
     }
 
     @Override
-    public StorageSize getFluids(List<StoredFluidStack> fluids, TileEntity tile, EnumFacing dir) {
+    public StorageSize getFluids(List<StoredFluidStack> fluids, BlockEntity tile, Direction dir) {
         TileTank tank = (TileTank) tile;
         TankGrid tanks = tank.getTank();
         if (tanks != null) {

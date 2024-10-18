@@ -1,7 +1,7 @@
 package sonar.core.handlers.energy.items;
 
 import appeng.api.implementations.items.IAEItemPowerStorage;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.energy.IItemEnergyHandler;
 import sonar.core.api.asm.ItemEnergyHandler;
@@ -34,22 +34,22 @@ public class ItemHandlerAppliedEnergistics implements IItemEnergyHandler {
     @Override
     public long addEnergy(long add, ItemStack stack, ActionType actionType) {
         IAEItemPowerStorage storage = (IAEItemPowerStorage) stack.getItem();
-        return add - (long)storage.injectAEPower(stack, add, AE2Helper.getActionable(actionType));
+        return add - (long) storage.injectAEPower(stack, add, AE2Helper.getActionable(actionType));
     }
 
     @Override
     public long removeEnergy(long remove, ItemStack stack, ActionType actionType) {
         IAEItemPowerStorage storage = (IAEItemPowerStorage) stack.getItem();
-        return remove - (long)storage.extractAEPower(stack, remove, AE2Helper.getActionable(actionType));
+        return remove - (long) storage.extractAEPower(stack, remove, AE2Helper.getActionable(actionType));
     }
 
     @Override
     public long getStored(ItemStack stack) {
-        return (long)((IAEItemPowerStorage)stack.getItem()).getAECurrentPower(stack);
+        return (long) ((IAEItemPowerStorage) stack.getItem()).getAECurrentPower(stack);
     }
 
     @Override
     public long getCapacity(ItemStack stack) {
-        return (long)((IAEItemPowerStorage)stack.getItem()).getAEMaxPower(stack);
+        return (long) ((IAEItemPowerStorage) stack.getItem()).getAEMaxPower(stack);
     }
 }

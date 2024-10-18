@@ -1,25 +1,25 @@
 package sonar.core.handlers.inventories.handling;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
-/**only for internal use*/
+/** Only for internal use */
 public class IInventoryWrapper implements IInventory {
 
     public final IItemHandlerModifiable handler;
     public TileEntity tile = null;
 
-    public IInventoryWrapper(IItemHandlerModifiable handler, TileEntity tile){
+    public IInventoryWrapper(IItemHandlerModifiable handler, TileEntity tile) {
         this.handler = handler;
         this.tile = tile;
     }
 
-    public IInventoryWrapper(IItemHandlerModifiable handler){
+    public IInventoryWrapper(IItemHandlerModifiable handler) {
         this.handler = handler;
     }
 
@@ -30,8 +30,8 @@ public class IInventoryWrapper implements IInventory {
 
     @Override
     public boolean isEmpty() {
-        for(int i = 0; i < getSizeInventory(); i++){
-            if(!getStackInSlot(i).isEmpty()){
+        for (int i = 0; i < getSizeInventory(); i++) {
+            if (!getStackInSlot(i).isEmpty()) {
                 return false;
             }
         }
@@ -65,24 +65,24 @@ public class IInventoryWrapper implements IInventory {
 
     @Override
     public void markDirty() {
-        if(tile != null){
+        if (tile != null) {
             tile.markDirty();
         }
     }
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player) {
-        if(tile != null){
+    public boolean isUsableByPlayer(PlayerEntity player) {
+        if (tile != null) {
             return player.getDistanceSq(tile.getPos().getX() + 0.5D, tile.getPos().getY() + 0.5D, tile.getPos().getZ() + 0.5D) <= 64.0D;
         }
         return true;
     }
 
     @Override
-    public void openInventory(EntityPlayer player) {}
+    public void openInventory(PlayerEntity player) {}
 
     @Override
-    public void closeInventory(EntityPlayer player) {}
+    public void closeInventory(PlayerEntity player) {}
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
@@ -105,14 +105,14 @@ public class IInventoryWrapper implements IInventory {
 
     @Override
     public void clear() {
-        for(int i = 0; i < getSizeInventory(); i++){
+        for (int i = 0; i < getSizeInventory(); i++) {
             handler.setStackInSlot(i, ItemStack.EMPTY);
         }
     }
 
     @Override
     public String getName() {
-        return tile != null ? tile.getBlockType().getLocalizedName() :"Wrapper Item Handler";
+        return tile != null ? tile.getBlockState().getBlock().getLocalizedName() : "Wrapper Item Handler";
     }
 
     @Override
@@ -122,6 +122,6 @@ public class IInventoryWrapper implements IInventory {
 
     @Override
     public ITextComponent getDisplayName() {
-        return new TextComponentString(tile != null ? tile.getBlockType().getUnlocalizedName() :getName());
+        return new StringTextComponent(tile != null ? tile.getBlockState().getBlock().getTranslationKey() : getName());
     }
 }

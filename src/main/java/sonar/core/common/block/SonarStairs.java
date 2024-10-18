@@ -7,7 +7,7 @@ public class SonarStairs extends BlockStairs {
 
 	public SonarStairs(Block block) {
 		super(block.getStateFromMeta(0));
-		this.setLightOpacity(0);    
+		this.setLightOpacity(0);
 		this.useNeighborBrightness = true;
 	}
 }

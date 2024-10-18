@@ -19,9 +19,9 @@ public abstract class SonarItemScreen extends SonarItem {
 	public abstract boolean canPlaceScreenOn(World world, IBlockState state, BlockPos pos, EnumFacing screenFacing);
 
 	@Nonnull
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		ItemStack stack = player.getHeldItem(hand);
-		if (!player.canPlayerEdit(pos, facing, stack) || facing == EnumFacing.DOWN || facing == EnumFacing.UP || world.getBlockState(pos).getBlock().isReplaceable(world, pos)) {
+		if (!player.canPlayerEdit(pos.offset(facing), facing, stack) || facing == EnumFacing.DOWN || facing == EnumFacing.UP || world.getBlockState(pos).getBlock().isReplaceable(world, pos)) {
 			return EnumActionResult.PASS;
 		}
 		EnumFacing orientation = facing;
@@ -36,6 +36,5 @@ public abstract class SonarItemScreen extends SonarItem {
 			return EnumActionResult.SUCCESS;
 		}
 		return EnumActionResult.PASS;
-
 	}
 }

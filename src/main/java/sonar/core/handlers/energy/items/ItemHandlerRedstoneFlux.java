@@ -1,7 +1,7 @@
 package sonar.core.handlers.energy.items;
 
 import cofh.redstoneflux.api.IEnergyContainerItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.utils.ActionType;
 import sonar.core.api.energy.IItemEnergyHandler;
@@ -32,25 +32,25 @@ public class ItemHandlerRedstoneFlux implements IItemEnergyHandler {
 
     @Override
     public long addEnergy(long add, ItemStack stack, ActionType actionType) {
-        IEnergyContainerItem item = (IEnergyContainerItem)stack.getItem();
-        int actualAdd = (int)Math.min(add, Integer.MAX_VALUE);
+        IEnergyContainerItem item = (IEnergyContainerItem) stack.getItem();
+        int actualAdd = (int) Math.min(add, Integer.MAX_VALUE);
         return item.receiveEnergy(stack, actualAdd, actionType.shouldSimulate());
     }
 
     @Override
     public long removeEnergy(long remove, ItemStack stack, ActionType actionType) {
-        IEnergyContainerItem item = (IEnergyContainerItem)stack.getItem();
-        int actualRemove = (int)Math.min(remove, Integer.MAX_VALUE);
+        IEnergyContainerItem item = (IEnergyContainerItem) stack.getItem();
+        int actualRemove = (int) Math.min(remove, Integer.MAX_VALUE);
         return item.extractEnergy(stack, actualRemove, actionType.shouldSimulate());
     }
 
     @Override
     public long getStored(ItemStack stack) {
-        return ((IEnergyContainerItem)stack.getItem()).getEnergyStored(stack);
+        return ((IEnergyContainerItem) stack.getItem()).getEnergyStored(stack);
     }
 
     @Override
     public long getCapacity(ItemStack stack) {
-        return ((IEnergyContainerItem)stack.getItem()).getMaxEnergyStored(stack);
+        return ((IEnergyContainerItem) stack.getItem()).getMaxEnergyStored(stack);
     }
 }

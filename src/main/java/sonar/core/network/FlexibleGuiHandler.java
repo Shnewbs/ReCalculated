@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -35,9 +34,13 @@ public class FlexibleGuiHandler {
 	public Map<EntityPlayer, Pair<Object, IFlexibleGui>> lastGuis = new HashMap<>();
 	public Map<EntityPlayer, Integer> lastID = new HashMap<>();
 
-	public static String MULTIPART = "multipart", TILEENTITY = "tile", ITEM = "item", ID = "id", SLOT_ID = "uuid";
+	public static final String MULTIPART = "multipart";
+	public static final String TILEENTITY = "tile";
+	public static final String ITEM = "item";
+	public static final String ID = "id";
+	public static final String SLOT_ID = "uuid";
 
-	public static FlexibleGuiHandler instance(){
+	public static FlexibleGuiHandler instance() {
 		return SonarCore.instance.guiHandler;
 	}
 
@@ -55,19 +58,17 @@ public class FlexibleGuiHandler {
 		if (SonarLoader.mcmultipartLoaded && tag.getBoolean(MULTIPART)) {
 			int uuid = tag.getInteger(SLOT_ID);
 			Optional<IMultipartTile> tile = SonarMultipartHelper.getMultipartTileFromSlotID(world, pos, uuid);
-			obj = tile.isPresent() ? tile.get() : world.getTileEntity(pos);
+			obj = tile.orElse(world.getTileEntity(pos));
 		} else if (tag.getBoolean(TILEENTITY)) {
 			obj = world.getTileEntity(pos);
 		} else if (tag.getBoolean(ITEM)) {
 			obj = player.getHeldItemMainhand();
 		}
-		if (obj == null) {
-			return null;
-		}
+
 		if (obj instanceof ItemStack && ((ItemStack) obj).getItem() instanceof IFlexibleGui) {
-			return new Pair(obj, ((ItemStack) obj).getItem());
+			return new Pair<>(obj, ((ItemStack) obj).getItem());
 		} else if (obj instanceof IFlexibleGui) {
-			return new Pair(obj, obj);
+			return new Pair<>(obj, obj);
 		}
 		return null;
 	}
@@ -120,38 +121,31 @@ public class FlexibleGuiHandler {
 			Container container = (Container) gui.b.getServerElement(gui.a, id, world, player, tag);
 			if (container != null) {
 				if (!change) {
-					entityPlayerMP.getNextWindowId();
 					entityPlayerMP.closeContainer();
 				} else {
 					this.lastContainers.put(player, player.openContainer);
 					this.lastGuis.put(player, gui);
-					// this.lastID.put(player, player.openContainer.windowId);
 				}
 				int windowId = entityPlayerMP.currentWindowId;
 				tag.setInteger(ID, id);
-				SonarCore.network.sendTo(new PacketFlexibleOpenGui(change, pos, windowId, tag), (EntityPlayerMP) player);
+				SonarCore.network.sendTo(new PacketFlexibleOpenGui(change, pos, windowId, tag), entityPlayerMP);
 				entityPlayerMP.openContainer = container;
 				entityPlayerMP.openContainer.windowId = windowId;
 				entityPlayerMP.openContainer.addListener(entityPlayerMP);
-				// MinecraftForge.EVENT_BUS.post(new
-				// PlayerContainerEvent.Open(player, player.openContainer));
-				// FIXME
 			}
 		}
 	}
-	
-	public void openGuiClient(EntityPlayer player, BlockPos pos, NBTTagCompound tag, int id, int windowID, boolean change){
 
+	public void openGuiClient(EntityPlayer player, BlockPos pos, NBTTagCompound tag, int id, int windowID, boolean change) {
 		Pair<Object, IFlexibleGui> gui = SonarCore.instance.guiHandler.getFlexibleGui(id, player, player.getEntityWorld(), pos, tag);
 		if (change) {
-			FlexibleGuiHandler.setLastContainer(player.openContainer, player, Side.CLIENT);
-			FlexibleGuiHandler.setLastGui(gui, player, Side.CLIENT);
+			setLastContainer(player.openContainer, player, Side.CLIENT);
+			setLastGui(gui, player, Side.CLIENT);
 			SonarCore.instance.guiHandler.lastScreen = Minecraft.getMinecraft().currentScreen;
-		} // else player.closeScreen();
+		}
 		FMLClientHandler.instance().showGuiScreen(gui.b.getClientElement(gui.a, id, player.getEntityWorld(), player, tag));
 		player.openContainer.windowId = windowID;
 	}
-
 
 	public static void changeGui(IFlexibleGui guiTile, int id, int returnID, World world, EntityPlayer player) {
 		if (guiTile instanceof TileSonarMultipart) {
@@ -164,12 +158,10 @@ public class FlexibleGuiHandler {
 	}
 
 	public static Object getLastContainer(EntityPlayer player, Side side) {
-
 		return side.isServer() ? SonarCore.instance.guiHandler.lastContainers.get(player) : SonarCore.instance.guiHandler.lastContainer;
 	}
 
 	public static Pair<Object, IFlexibleGui> getLastGui(EntityPlayer player, Side side) {
-
 		return side.isServer() ? SonarCore.instance.guiHandler.lastGuis.get(player) : SonarCore.instance.guiHandler.lastGui;
 	}
 

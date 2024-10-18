@@ -12,30 +12,38 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Abstract class representing a block that can contain multiple parts.
+ */
 public abstract class BlockSonarMultipart extends BlockContainer implements IMultipart {
 
 	protected BlockSonarMultipart(Material materialIn) {
 		super(materialIn);
 	}
 
+	@Override
 	public boolean isFullCube(IBlockState state) {
 		return false;
 	}
 
+	@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
 	}
 
 	@Nonnull
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+	@Override
+	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.MODEL;
 	}
 
+	@Override
 	public boolean canPlacePartAt(World world, BlockPos pos) {
-		return true;// getBlock().canPlaceBlockAt(world, pos); FIXME?
+		return true; // You might want to implement actual logic here based on your requirements.
 	}
 
+	@Override
 	public boolean canPlacePartOnSide(World world, BlockPos pos, EnumFacing side, IPartSlot slot) {
-		return true;// getBlock().canPlaceBlockOnSide(world, pos, side); FIXME?
+		return true; // You might want to implement actual logic here based on your requirements.
 	}
 }

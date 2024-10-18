@@ -4,8 +4,8 @@ import net.darkhax.tesla.api.ITeslaConsumer;
 import net.darkhax.tesla.api.ITeslaHolder;
 import net.darkhax.tesla.api.ITeslaProducer;
 import net.darkhax.tesla.capability.TeslaCapabilities;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -27,7 +27,7 @@ public class SonarEnergyItemWrapper implements IEnergyStorage, ICapabilityProvid
     public ISonarEnergyItem energyItem;
     public ItemStack stack;
 
-    public SonarEnergyItemWrapper(ISonarEnergyItem energyItem, ItemStack stack){
+    public SonarEnergyItemWrapper(ISonarEnergyItem energyItem, ItemStack stack) {
         this.energyItem = energyItem;
         this.stack = stack;
     }
@@ -88,8 +88,8 @@ public class SonarEnergyItemWrapper implements IEnergyStorage, ICapabilityProvid
     }
 
     @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-        if(capability == CapabilityEnergy.ENERGY){
+    public boolean hasCapability(@Nonnull Capability<?> capability, Direction facing) {
+        if (capability == CapabilityEnergy.ENERGY) {
             return true;
         }
         if (SonarLoader.teslaLoaded) {
@@ -99,9 +99,9 @@ public class SonarEnergyItemWrapper implements IEnergyStorage, ICapabilityProvid
     }
 
     @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-        if(capability == CapabilityEnergy.ENERGY){
-            return (T)this;
+    public <T> T getCapability(@Nonnull Capability<T> capability, Direction facing) {
+        if (capability == CapabilityEnergy.ENERGY) {
+            return (T) this;
         }
         if (SonarLoader.teslaLoaded) {
             if (capability == TeslaCapabilities.CAPABILITY_CONSUMER || capability == TeslaCapabilities.CAPABILITY_PRODUCER || capability == TeslaCapabilities.CAPABILITY_HOLDER)
@@ -109,5 +109,4 @@ public class SonarEnergyItemWrapper implements IEnergyStorage, ICapabilityProvid
         }
         return null;
     }
-
 }

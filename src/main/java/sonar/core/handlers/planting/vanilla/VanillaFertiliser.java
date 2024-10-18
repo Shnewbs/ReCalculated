@@ -14,7 +14,7 @@ public class VanillaFertiliser implements ISonarFertiliser {
 
 	@Override
 	public boolean canFertilise(World world, BlockPos pos, IBlockState state) {
-        return state.getBlock() instanceof IGrowable;
+		return state.getBlock() instanceof IGrowable;
 	}
 
 	@Override

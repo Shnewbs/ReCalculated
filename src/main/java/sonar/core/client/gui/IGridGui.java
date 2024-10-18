@@ -2,7 +2,7 @@ package sonar.core.client.gui;
 
 public interface IGridGui<T> {
 
-	float getCurrentScroll(SelectionGrid grid);
+	float getCurrentScroll(SelectionGrid<T> grid);
 
 	void onGridClicked(int gridID, T element, int x, int y, int pos, int button, boolean empty);
 

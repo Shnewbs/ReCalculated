@@ -4,7 +4,7 @@ import ic2.api.item.ElectricItem;
 import ic2.api.item.IElectricItem;
 import ic2.api.item.IElectricItemManager;
 import ic2.api.item.ISpecialElectricItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.utils.ActionType;
 import sonar.core.api.energy.IItemEnergyHandler;
@@ -47,18 +47,18 @@ public class ItemHandlerEnergyUnits implements IItemEnergyHandler {
 
     @Override
     public long getStored(ItemStack stack) {
-        return (long)getManager(stack).getCharge(stack);
+        return (long) getManager(stack).getCharge(stack);
     }
 
     @Override
     public long getCapacity(ItemStack stack) {
-        return (long)getManager(stack).getMaxCharge(stack);
+        return (long) getManager(stack).getMaxCharge(stack);
     }
 
     public static IElectricItemManager getManager(ItemStack stack) {
         if (stack.getItem() instanceof ISpecialElectricItem) {
             IElectricItemManager manager = ((ISpecialElectricItem) stack.getItem()).getManager(stack);
-            if(manager == null){
+            if (manager == null) {
                 manager = ElectricItem.getBackupManager(stack);
             }
             return manager;

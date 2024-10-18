@@ -1,7 +1,7 @@
 package sonar.core.network.sync;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
 import sonar.core.api.nbt.IBufManager;
 import sonar.core.api.nbt.IBufObject;
 import sonar.core.helpers.NBTHelper.SyncType;
@@ -44,22 +44,24 @@ public class SyncGeneric<T extends IBufObject> extends SyncPart {
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
-		NBTTagCompound infoTag = new NBTTagCompound();
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		CompoundNBT infoTag = new CompoundNBT(); // Updated to use CompoundNBT
 		manager.writeToNBT(infoTag, c);
-		if (!infoTag.hasNoTags())
-			nbt.setTag(this.getTagName(), infoTag);
-
+		if (!infoTag.isEmpty()) { // Updated method to check if NBT is empty
+			nbt.put(getTagName(), infoTag); // Updated method for setting NBT tag
+		}
 		return nbt;
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(this.getTagName()))
-			this.c = manager.readFromNBT(nbt.getCompoundTag(this.getTagName()));
+	public void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		if (nbt.contains(getTagName())) { // Updated method for checking NBT tag
+			this.c = manager.readFromNBT(nbt.getCompound(getTagName())); // Updated method for getting NBT compound
+		}
 	}
 
+	@Override
 	public String toString() {
-		return c.toString();
+		return c != null ? c.toString() : "null"; // Prevents NullPointerException
 	}
 }

@@ -1,7 +1,7 @@
 package sonar.core.listener;
 
 /**
- * works in the same way as {@link ListenerList} but notifies an owner {@link ISonarListenable} as listeners are added/removed
+ * Works in the same way as {@link ListenerList} but notifies an owner {@link ISonarListenable} as listeners are added/removed.
  */
 public class ListenableList<L extends ISonarListener> extends ListenerList<L> {
 

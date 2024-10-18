@@ -20,29 +20,28 @@ public class SonarInventoryTile extends SonarInventory {
 	public SonarInventoryTile(ISonarInventoryTile tile, int size) {
 		super(size);
 		this.tile = tile;
-		this.getInsertFilters().put((SLOT,STACK,FACE)-> tile.checkInsert(SLOT,STACK,FACE,EnumFilterType.INTERNAL), EnumFilterType.INTERNAL);
-		this.getInsertFilters().put((SLOT,STACK,FACE)-> tile.checkInsert(SLOT,STACK,FACE,EnumFilterType.EXTERNAL), EnumFilterType.EXTERNAL);
-		this.getExtractFilters().put((SLOT,COUNT,FACE)-> tile.checkExtract(SLOT,COUNT,FACE,EnumFilterType.INTERNAL), EnumFilterType.INTERNAL);
-		this.getExtractFilters().put((SLOT,COUNT,FACE)-> tile.checkExtract(SLOT,COUNT,FACE,EnumFilterType.EXTERNAL), EnumFilterType.EXTERNAL);
+		this.getInsertFilters().put((slot, stack, face) -> tile.checkInsert(slot, stack, face, EnumFilterType.INTERNAL), EnumFilterType.INTERNAL);
+		this.getInsertFilters().put((slot, stack, face) -> tile.checkInsert(slot, stack, face, EnumFilterType.EXTERNAL), EnumFilterType.EXTERNAL);
+		this.getExtractFilters().put((slot, count, face) -> tile.checkExtract(slot, count, face, EnumFilterType.INTERNAL), EnumFilterType.INTERNAL);
+		this.getExtractFilters().put((slot, count, face) -> tile.checkExtract(slot, count, face, EnumFilterType.EXTERNAL), EnumFilterType.EXTERNAL);
 	}
 
 	@Override
 	public IInventory getWrapperInventory() {
-		if(!(tile instanceof TileEntity)){
+		if (!(tile instanceof TileEntity)) {
 			return super.getWrapperInventory();
 		}
 		return wrapped_inv == null ? wrapped_inv = new IInventoryWrapper(this, (TileEntity) tile) : wrapped_inv;
 	}
 
 	@Override
-	public boolean checkDrop(int slot, @Nonnull ItemStack stack){
+	public boolean checkDrop(int slot, @Nonnull ItemStack stack) {
 		return tile.checkDrop(slot, stack);
 	}
 
 	@Override
-	protected void onContentsChanged(int slot){
+	protected void onContentsChanged(int slot) {
 		super.onContentsChanged(slot);
 		tile.onInventoryContentsChanged(slot);
 	}
-
 }

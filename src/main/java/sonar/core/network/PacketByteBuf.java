@@ -56,7 +56,6 @@ public class PacketByteBuf extends PacketCoords<PacketByteBuf> {
 
 		@Override
 		public IMessage processMessage(EntityPlayer player, MessageContext ctx, PacketByteBuf message, TileEntity tile) {
-
 			SonarCore.proxy.getThreadListener(ctx.side).addScheduledTask(() -> {
 				if (tile instanceof IByteBufTile) {
 					IByteBufTile packet = (IByteBufTile) tile;

@@ -12,10 +12,10 @@ import net.minecraft.world.IBlockAccess;
 
 public class SonarFence extends BlockFence {
 
-	// Material connectMaterial;
+    // Material connectMaterial;
 
-	public SonarFence(Material connectMaterial) {
-		super(connectMaterial, MapColor.GRAY);
+    public SonarFence(Material connectMaterial) {
+        super(connectMaterial, MapColor.GRAY);
         setHardness(2.0f);
         setResistance(10.0f);
     }
@@ -24,11 +24,11 @@ public class SonarFence extends BlockFence {
         super(connectMaterial, MapColor.GRAY);
         setHardness(hardness);
         setResistance(resistance);
-	}
+    }
 
-	public boolean canConnectTo(IBlockAccess worldIn, BlockPos pos) {
-		IBlockState state = worldIn.getBlockState(pos);
-		Block block = state.getBlock();
+    public boolean canConnectTo(IBlockAccess worldIn, BlockPos pos) {
+        IBlockState state = worldIn.getBlockState(pos);
+        Block block = state.getBlock();
         return block != Blocks.BARRIER && (block instanceof BlockFence && state.getMaterial() == this.blockMaterial || block instanceof BlockFenceGate || block.getMaterial(state).isOpaque() && block.isFullCube(state) && block.getMaterial(state) != Material.GOURD);
-	}
+    }
 }

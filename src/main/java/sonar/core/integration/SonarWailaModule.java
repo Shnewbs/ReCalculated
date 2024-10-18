@@ -19,11 +19,13 @@ import java.util.List;
  */
 public class SonarWailaModule {
 
-    public static List<String> FMPProviders = new ArrayList<>();
+	public static List<String> FMPProviders = new ArrayList<>();
 
 	public static void register() {
+		// Registering WAILA Body Provider for TileEntitySonar
 		ModuleRegistrar.instance().registerBodyProvider(new HUDSonar(), TileEntitySonar.class);
 
+		// Registering WAILA Body Providers for FMP
 		for (String fmpPart : FMPProviders) {
 			if (fmpPart != null && !fmpPart.isEmpty()) {
 				ModuleRegistrar.instance().registerBodyProvider(new HUDSonarFMP(), fmpPart);
@@ -38,7 +40,7 @@ public class SonarWailaModule {
 	public static class HUDSonar implements IWailaDataProvider {
 
 		@Nonnull
-        @Override
+		@Override
 		public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config) {
 			TileEntity te = accessor.getTileEntity();
 			if (te == null)
@@ -52,24 +54,24 @@ public class SonarWailaModule {
 		}
 
 		@Override
-		public final ItemStack getWailaStack(IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		public ItemStack getWailaStack(IWailaDataAccessor accessor, IWailaConfigHandler config) {
 			return accessor.getStack();
 		}
 
 		@Nonnull
-        @Override
+		@Override
 		public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, BlockPos pos) {
 			return tag;
 		}
 
 		@Nonnull
-        @Override
+		@Override
 		public List<String> getWailaHead(ItemStack arg0, List<String> currenttip, IWailaDataAccessor arg2, IWailaConfigHandler config) {
 			return currenttip;
 		}
 
 		@Nonnull
-        @Override
+		@Override
 		public List<String> getWailaTail(ItemStack arg0, List<String> currenttip, IWailaDataAccessor arg2, IWailaConfigHandler config) {
 			return currenttip;
 		}
@@ -77,14 +79,9 @@ public class SonarWailaModule {
 
 	public static class HUDSonarFMP implements IWailaFMPProvider {
 
-        @Override
+		@Override
 		public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaFMPAccessor accessor, IWailaConfigHandler config) {
 			Object handler = accessor.getTileEntity();
-			/*
-			handler = OLDMultipartHelper.checkObject(handler);
-			if (handler == null)
-				return currenttip;
-			*/
 			if (handler instanceof IWailaInfo) {
 				IWailaInfo tile = (IWailaInfo) handler;
 				tile.getWailaInfo(currenttip, null);
@@ -93,12 +90,12 @@ public class SonarWailaModule {
 			return currenttip;
 		}
 
-        @Override
+		@Override
 		public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaFMPAccessor accessor, IWailaConfigHandler config) {
 			return currenttip;
 		}
 
-        @Override
+		@Override
 		public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaFMPAccessor accessor, IWailaConfigHandler config) {
 			return currenttip;
 		}

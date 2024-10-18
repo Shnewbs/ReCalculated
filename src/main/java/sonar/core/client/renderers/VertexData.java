@@ -3,10 +3,10 @@ package sonar.core.client.renderers;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class VertexData {
     private final VertexFormat format;
     private float x, y, z;
@@ -66,7 +66,7 @@ public class VertexData {
         }
     }
 
-    private void applyVertexDataForType(int index, VertexFormatElement.EnumUsage type, UnpackedBakedQuad.Builder builder) {
+    private void applyVertexDataForType(int index, VertexFormatElement.Usage type, UnpackedBakedQuad.Builder builder) {
         switch(type) {
             case POSITION:
                 builder.put(index, x, y, z, 1);
@@ -85,8 +85,9 @@ public class VertexData {
                 break;
             case GENERIC:
                 builder.put(index, 1, 1, 1, 1);
-		default:
-			break;
+                break;
+            default:
+                break;
         }
     }
 }

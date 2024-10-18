@@ -7,12 +7,12 @@ public class SonarItemSimpleFuel extends Item {
 
     public final int burnTime;
 
-    public SonarItemSimpleFuel(int burnTime){
+    public SonarItemSimpleFuel(int burnTime) {
         this.burnTime = burnTime;
     }
 
-    public int getItemBurnTime(ItemStack itemStack){
+    @Override
+    public int getBurnTime(ItemStack itemStack) {
         return burnTime;
     }
-
 }

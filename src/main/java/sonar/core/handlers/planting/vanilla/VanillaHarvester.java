@@ -15,7 +15,7 @@ public class VanillaHarvester implements ISonarHarvester {
 
 	@Override
 	public boolean canHarvest(World world, BlockPos pos, IBlockState state) {
-        return state.getBlock() instanceof IGrowable;
+		return state.getBlock() instanceof IGrowable;
 	}
 
 	@Override
@@ -25,11 +25,11 @@ public class VanillaHarvester implements ISonarHarvester {
 
 	@Override
 	public boolean doHarvest(NonNullList<ItemStack> drops, World world, BlockPos pos, IBlockState state, int fortune, boolean keepBlock) {
-		world.getBlockState(pos).getBlock().getDrops(drops, world, pos, state, fortune);
+		state.getBlock().getDrops(drops, world, pos, state, fortune);
 		if (!keepBlock) {
 			world.setBlockToAir(pos);
-		}else{
-			//remove duplicates?
+		} else {
+			// Remove duplicates if necessary
 			world.setBlockState(pos, state.getBlock().getDefaultState());
 		}
 		return true;

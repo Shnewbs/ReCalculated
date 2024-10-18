@@ -1,10 +1,11 @@
 package sonar.core.api;
 
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.loading.FMLLoader;
 import sonar.core.api.wrappers.FluidWrapper;
 
 /**
- * Use this for all your interaction with the mod. This will be initilized by Sonar Core if it is loaded. Make sure you only register stuff once Sonar Core is loaded therefore in the FMLPostInitializationEvent
+ * Use this for all your interaction with the mod. This will be initialized by Sonar Core if it is loaded.
+ * Make sure you only register stuff once Sonar Core is loaded, in the FMLPostInitializationEvent.
  */
 public final class SonarAPI {
 
@@ -15,11 +16,11 @@ public final class SonarAPI {
 	private static FluidWrapper fluids = new FluidWrapper();
 
 	public static void init() {
-		if (Loader.isModLoaded("SonarCore")|| Loader.isModLoaded("sonarcore")) {
+		if (FMLLoader.getLoadingModList().isModLoaded("sonarcore")) {
 			try {
-				fluids = (FluidWrapper) Class.forName("sonar.core.handlers.fluids.FluidHelper").newInstance();
+				fluids = (FluidWrapper) Class.forName("sonar.core.handlers.fluids.FluidHelper").getDeclaredConstructor().newInstance();
 			} catch (Exception exception) {
-				System.err.println(NAME + " : FAILED TO INITILISE API" + exception.getMessage());
+				System.err.println(NAME + " : FAILED TO INITIALIZE API: " + exception.getMessage());
 			}
 		}
 	}

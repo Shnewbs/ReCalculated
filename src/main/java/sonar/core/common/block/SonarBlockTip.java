@@ -26,11 +26,11 @@ public class SonarBlockTip extends ItemBlock {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-    public void addInformation(@Nonnull ItemStack stack, World world, @Nonnull List<String> list, @Nonnull ITooltipFlag par4) {
-        super.addInformation(stack, world, list, par4);
+	public void addInformation(@Nonnull ItemStack stack, World world, @Nonnull List<String> list, @Nonnull ITooltipFlag par4) {
+		super.addInformation(stack, world, list, par4);
 		if (Block.getBlockFromItem(stack.getItem()) instanceof ISpecialTooltip) {
 			ISpecialTooltip tooltip = (ISpecialTooltip) Block.getBlockFromItem(stack.getItem());
-            tooltip.addSpecialToolTip(stack, world, list, stack.getTagCompound());
+			tooltip.addSpecialToolTip(stack, world, list, stack.getTagCompound());
 		}
 	}
 }

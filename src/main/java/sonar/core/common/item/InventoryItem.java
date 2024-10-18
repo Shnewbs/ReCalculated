@@ -42,13 +42,13 @@ public class InventoryItem implements IInventory {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public ItemStack getStackInSlot(int slot) {
 		return inventory.get(slot);
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public ItemStack decrStackSize(int slot, int amount) {
 		ItemStack stack = getStackInSlot(slot);
 		if (!stack.isEmpty()) {
@@ -63,7 +63,7 @@ public class InventoryItem implements IInventory {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public ItemStack removeStackFromSlot(int slot) {
 		ItemStack stack = getStackInSlot(slot);
 		setInventorySlotContents(slot, ItemStack.EMPTY);
@@ -87,7 +87,7 @@ public class InventoryItem implements IInventory {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -98,7 +98,7 @@ public class InventoryItem implements IInventory {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public ITextComponent getDisplayName() {
 		return new TextComponentTranslation(name);
 	}
@@ -181,9 +181,7 @@ public class InventoryItem implements IInventory {
 	}
 
 	@Override
-	public void setField(int id, int value) {
-
-	}
+	public void setField(int id, int value) {}
 
 	@Override
 	public int getFieldCount() {

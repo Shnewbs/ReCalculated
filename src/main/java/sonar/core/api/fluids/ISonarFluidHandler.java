@@ -1,7 +1,6 @@
 package sonar.core.api.fluids;
 
 import java.util.List;
-
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import sonar.core.api.SonarAPI;
@@ -9,46 +8,49 @@ import sonar.core.api.StorageSize;
 import sonar.core.api.utils.ActionType;
 
 /**
- * used for providing information on Fluids stored in TileEntities for the Fluid Reader to read, the Provider must be registered in the {@link SonarAPI} to be used
+ * Interface for handling fluids stored in TileEntities, used by the Fluid Reader.
+ * Providers must be registered in {@link SonarAPI} to be utilized.
  */
 public interface ISonarFluidHandler {
 
-    /**
-     * @param tile the {@link TileEntity} to check
-	 * @param dir the {@link EnumFacing} to check from
-     * @return can this provider handle fluids for this side of the TileEntity
-     */
-    boolean canHandleFluids(TileEntity tile, EnumFacing dir);
+	/**
+	 * Determines if this handler can handle fluids for a given side of the TileEntity.
+	 *
+	 * @param tile the TileEntity to check.
+	 * @param dir the direction to check from.
+	 * @return true if the handler can handle fluids on this side.
+	 */
+	boolean canHandleFluids(TileEntity tile, EnumFacing dir);
 
-    /**
-     * used for adding an a {@link StoredFluidStack} to the Fluid Inventory
-     *
-	 * @param add the {@link StoredFluidStack} to add
-	 * @param tile the {@link TileEntity} to check
-	 * @param dir the {@link EnumFacing} to check from
-	 * @param action should this action be simulated
-     * @return what wasn't added
-     */
-    StoredFluidStack addStack(StoredFluidStack add, TileEntity tile, EnumFacing dir, ActionType action);
+	/**
+	 * Adds a fluid stack to the fluid inventory.
+	 *
+	 * @param add the fluid stack to add.
+	 * @param tile the TileEntity to add to.
+	 * @param dir the direction to check from.
+	 * @param action whether the action is simulated or performed.
+	 * @return the fluid stack that was not added.
+	 */
+	StoredFluidStack addStack(StoredFluidStack add, TileEntity tile, EnumFacing dir, ActionType action);
 
-    /**
-     * used for removing an a {@link StoredFluidStack} from the Fluid Inventory
-     *
-	 * @param remove the {@link StoredFluidStack} to remove
-	 * @param tile the {@link TileEntity} to check
-	 * @param dir the {@link EnumFacing} to check from
-	 * @param action should this action be simulated
-     * @return what wasn't extracted
-     */
-    StoredFluidStack removeStack(StoredFluidStack remove, TileEntity tile, EnumFacing dir, ActionType action);
+	/**
+	 * Removes a fluid stack from the fluid inventory.
+	 *
+	 * @param remove the fluid stack to remove.
+	 * @param tile the TileEntity to remove from.
+	 * @param dir the direction to check from.
+	 * @param action whether the action is simulated or performed.
+	 * @return the fluid stack that was not removed.
+	 */
+	StoredFluidStack removeStack(StoredFluidStack remove, TileEntity tile, EnumFacing dir, ActionType action);
 
-    /**
-     * only called if canHandleFluids is true
-     *
-     * @param fluids current list of fluids for the block from this Helper, providers only add to this and don't remove.
-	 * @param tile the {@link TileEntity} to check
-	 * @param dir the {@link EnumFacing} to check from
-     * @return an {@link StorageSize} object, ensure that capacity and stored fluids have been fully accounted for
-     */
-    StorageSize getFluids(List<StoredFluidStack> fluids, TileEntity tile, EnumFacing dir);
+	/**
+	 * Gets the list of fluids stored in the block and their storage size.
+	 *
+	 * @param fluids the list of fluids currently in the block.
+	 * @param tile the TileEntity to check.
+	 * @param dir the direction to check from.
+	 * @return the storage size object containing the capacity and stored fluid amounts.
+	 */
+	StorageSize getFluids(List<StoredFluidStack> fluids, TileEntity tile, EnumFacing dir);
 }

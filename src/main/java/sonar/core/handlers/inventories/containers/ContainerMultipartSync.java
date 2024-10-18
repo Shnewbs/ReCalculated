@@ -1,11 +1,11 @@
 package sonar.core.handlers.inventories.containers;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import sonar.core.SonarCore;
 import sonar.core.helpers.NBTHelper.SyncType;
 import sonar.core.integration.multipart.TileSonarMultipart;
@@ -28,14 +28,14 @@ public class ContainerMultipartSync extends Container {
 			super.detectAndSendChanges();
 		}
 		if (multipart != null && this.listeners != null) {
-			NBTTagCompound syncData = new NBTTagCompound();
+			CompoundNBT syncData = new CompoundNBT();
 			SyncType[] types = getSyncTypes();
 			for (SyncType type : types) {
 				multipart.writeData(syncData, type);
-				if (!syncData.hasNoTags()) {
-					for (IContainerListener o : listeners) {
-						if (o instanceof EntityPlayerMP) {
-							SonarCore.network.sendTo(new PacketMultipartSync(multipart.getPos(), syncData, type, multipart.getSlotID()), (EntityPlayerMP) o);
+				if (!syncData.isEmpty()) {
+					for (IContainerListener listener : listeners) {
+						if (listener instanceof ServerPlayerEntity) {
+							SonarCore.network.sendTo(new PacketMultipartSync(multipart.getPos(), syncData, type, multipart.getSlotID()), (ServerPlayerEntity) listener);
 						}
 					}
 				}
@@ -44,7 +44,8 @@ public class ContainerMultipartSync extends Container {
 	}
 
 	@Nonnull
-    public ItemStack transferStackInSlot(EntityPlayer player, int slotID) {
+	@Override
+	public ItemStack transferStackInSlot(PlayerEntity player, int slotID) {
 		return ItemStack.EMPTY;
 	}
 
@@ -57,7 +58,7 @@ public class ContainerMultipartSync extends Container {
 	}
 
 	@Override
-	public boolean canInteractWith(@Nonnull EntityPlayer playerIn) {
+	public boolean canInteractWith(@Nonnull PlayerEntity playerIn) {
 		return true;
 	}
 

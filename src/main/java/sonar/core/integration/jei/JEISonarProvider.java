@@ -9,15 +9,23 @@ import sonar.core.recipes.RecipeHelperV2;
 
 public class JEISonarProvider {
 
-    public ItemStack catalyst;
-    public RecipeHelperV2 recipes;
-    public String background;
-    public String modid;
-    public Class<? extends IRecipeWrapper> recipeClass;
-    public IRecipeFactory recipeFactory;
-    public ICategoryFactory categoryFactory;
+    public final ItemStack catalyst;
+    public final RecipeHelperV2 recipes;
+    public final String background;
+    public final String modid;
+    public final Class<? extends IRecipeWrapper> recipeClass;
+    public final IRecipeFactory recipeFactory;
+    public final ICategoryFactory categoryFactory;
 
-    public JEISonarProvider(RecipeHelperV2 recipes, Object catalyst, Class<? extends IRecipeWrapper> recipeClass, IRecipeFactory recipeFactory, ICategoryFactory categoryFactory, String background, String modid){
+    public JEISonarProvider(
+            RecipeHelperV2 recipes,
+            Object catalyst,
+            Class<? extends IRecipeWrapper> recipeClass,
+            IRecipeFactory recipeFactory,
+            ICategoryFactory categoryFactory,
+            String background,
+            String modid) {
+
         this.recipes = recipes;
         this.catalyst = ItemStackHelper.getOrCreateStack(catalyst);
         this.recipeClass = recipeClass;
@@ -27,17 +35,15 @@ public class JEISonarProvider {
         this.modid = modid;
     }
 
-    public String getID(){
+    public String getID() {
         return recipes.getRecipeID();
     }
 
-    public interface IRecipeFactory{
+    public interface IRecipeFactory {
         JEISonarRecipe create(RecipeHelperV2 helper, ISonarRecipe recipe);
     }
 
-    public interface ICategoryFactory{
+    public interface ICategoryFactory {
         JEISonarCategory create(IGuiHelper helper, JEISonarProvider handler);
     }
-
-
 }

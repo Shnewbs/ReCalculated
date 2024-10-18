@@ -3,14 +3,16 @@ package sonar.core.network.sync;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
 import sonar.core.helpers.NBTHelper;
 import sonar.core.helpers.NBTHelper.SyncType;
 
 public class SyncableList {
 
-    private ArrayList<ISyncPart> syncParts = new ArrayList<>(), changedSyncParts = new ArrayList<>();
-    private ArrayList<IDirtyPart> dirtyParts = new ArrayList<>(), changedDirtyParts = new ArrayList<>();
+	private ArrayList<ISyncPart> syncParts = new ArrayList<>();
+	private ArrayList<ISyncPart> changedSyncParts = new ArrayList<>();
+	private ArrayList<IDirtyPart> dirtyParts = new ArrayList<>();
+	private ArrayList<IDirtyPart> changedDirtyParts = new ArrayList<>();
 
 	public ISyncableListener listener;
 
@@ -19,8 +21,8 @@ public class SyncableList {
 	}
 
 	public void addPart(IDirtyPart part) {
-        ArrayList list = part instanceof ISyncPart ? syncParts : dirtyParts;
-        ArrayList changeList = part instanceof ISyncPart ? changedSyncParts : changedDirtyParts;
+		ArrayList list = part instanceof ISyncPart ? syncParts : dirtyParts;
+		ArrayList changeList = part instanceof ISyncPart ? changedSyncParts : changedDirtyParts;
 		if (!list.contains(part)) {
 			list.add(part);
 			changeList.add(part);
@@ -29,12 +31,12 @@ public class SyncableList {
 	}
 
 	public void removePart(IDirtyPart part) {
-        ArrayList list = part instanceof ISyncPart ? syncParts : dirtyParts;
+		ArrayList list = part instanceof ISyncPart ? syncParts : dirtyParts;
 		list.remove(part);
 	}
 
 	public void addParts(Collection<? extends IDirtyPart> parts) {
-        parts.forEach(this::addPart);
+		parts.forEach(this::addPart);
 	}
 
 	public void addParts(IDirtyPart... parts) {
@@ -44,16 +46,16 @@ public class SyncableList {
 	}
 
 	public void markSyncPartChanged(IDirtyPart part) {
-        ArrayList list = part instanceof ISyncPart ? changedSyncParts : changedDirtyParts;
+		ArrayList list = part instanceof ISyncPart ? changedSyncParts : changedDirtyParts;
 		list.add(part);
 	}
 
 	public void onPartSynced(IDirtyPart part) {
-		//ArrayList list = (part instanceof ISyncPart ? changedSyncParts : changedDirtyParts);
-		//list.remove(part);
+		// ArrayList list = (part instanceof ISyncPart ? changedSyncParts : changedDirtyParts);
+		// list.remove(part);
 	}
-	
-	public void onPartsSynced(){
+
+	public void onPartsSynced() {
 		changedSyncParts.clear();
 		changedDirtyParts.clear();
 	}
@@ -66,12 +68,12 @@ public class SyncableList {
 		return syncParts;
 	}
 
-    /**
-     * ONLY WORKS WITH LISTS WITH ISYNCPARTS in EXACTLY THE SAME POSITIONS!!!!
-     */
-    public void copyFrom(SyncableList list) {
-        NBTTagCompound copy = new NBTTagCompound();
-        NBTHelper.writeSyncParts(copy, SyncType.SAVE, list, true);
-        NBTHelper.readSyncParts(copy, SyncType.SAVE, this);
-    }
+	/**
+	 * ONLY WORKS WITH LISTS WITH ISYNCPARTS in EXACTLY THE SAME POSITIONS!!!!
+	 */
+	public void copyFrom(SyncableList list) {
+		CompoundNBT copy = new CompoundNBT(); // Updated to use CompoundNBT
+		NBTHelper.writeSyncParts(copy, SyncType.SAVE, list, true);
+		NBTHelper.readSyncParts(copy, SyncType.SAVE, this);
+	}
 }

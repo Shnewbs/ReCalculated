@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 
 public class JEISonarMapper {
 
-	public Map<RecipeObjectType, Map<Integer, RecipeMapping>> map = new HashMap<>();
+	private final Map<RecipeObjectType, Map<Integer, RecipeMapping>> map = new HashMap<>();
 
 	public JEISonarMapper() {}
 
@@ -21,28 +21,29 @@ public class JEISonarMapper {
 	}
 
 	public void map(RecipeObjectType type, int recipePos, RecipeMapping mapping) {
-		map.computeIfAbsent(type, k -> new HashMap<>());
-		map.get(type).put(recipePos, mapping);
+		map.computeIfAbsent(type, k -> new HashMap<>()).put(recipePos, mapping);
 	}
 
 	public void mapTo(IGuiItemStackGroup stacks, IIngredients ingredients) {
 		for (Entry<RecipeObjectType, Map<Integer, RecipeMapping>> entry : map.entrySet()) {
-			List<List<ItemStack>> objects = entry.getKey() == RecipeObjectType.INPUT ? ingredients.getInputs(ItemStack.class) : ingredients.getOutputs(ItemStack.class);
+			List<List<ItemStack>> objects = entry.getKey() == RecipeObjectType.INPUT
+					? ingredients.getInputs(ItemStack.class)
+					: ingredients.getOutputs(ItemStack.class);
+
 			for (Entry<Integer, RecipeMapping> mapping : entry.getValue().entrySet()) {
 				RecipeMapping recipe = mapping.getValue();
 				stacks.init(recipe.slotPos, entry.getKey() == RecipeObjectType.INPUT, recipe.xPos, recipe.yPos);
+
 				List<ItemStack> obj = objects.get(mapping.getKey());
-				if (obj != null) {
-					stacks.set(recipe.slotPos, obj);
-				} else {
-					stacks.set(recipe.slotPos, ItemStack.EMPTY);
-				}
+				stacks.set(recipe.slotPos, obj != null ? obj : List.of(ItemStack.EMPTY));
 			}
 		}
 	}
 
 	private static class RecipeMapping {
-		private int slotPos, xPos, yPos;
+		private final int slotPos;
+		private final int xPos;
+		private final int yPos;
 
 		private RecipeMapping(int slotPos, int xPos, int yPos) {
 			this.slotPos = slotPos;

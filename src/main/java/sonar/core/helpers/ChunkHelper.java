@@ -53,7 +53,7 @@ public class ChunkHelper {
 	}
 
 	public static List<ChunkPos> getChunksInRadius(BlockPos pos, double radius) {
-		List<ChunkPos> entities = new ArrayList<>();
+		List<ChunkPos> chunks = new ArrayList<>();
 
 		int smallX = MathHelper.floor((pos.getX() - radius) / 16.0D);
 		int bigX = MathHelper.floor((pos.getX() + radius) / 16.0D);
@@ -62,10 +62,10 @@ public class ChunkHelper {
 
 		for (int x = smallX; x <= bigX; x++) {
 			for (int z = smallZ; z <= bigZ; z++) {
-				entities.add(new ChunkPos(x, z));
+				chunks.add(new ChunkPos(x, z));
 			}
 		}
-		return entities;
+		return chunks;
 	}
 
 	public static List<EntityPlayerMP> getChunkPlayers(PlayerChunkMapEntry entry) {

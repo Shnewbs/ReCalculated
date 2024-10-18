@@ -14,20 +14,27 @@ import sonar.core.common.block.properties.SonarProperties;
 
 import javax.annotation.Nonnull;
 
-/**for multiparts that can face 6 different directions*/
+/**
+ * Abstract class for multiparts that can face six different directions.
+ */
 public abstract class BlockSidedMultipart extends BlockSonarMultipart {
 
 	public BlockSidedMultipart(Material material) {
 		super(material);
 	}
-	
+
 	@Nonnull
-    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing,
+											float hitX, float hitY, float hitZ,
+											int meta, EntityLivingBase placer) {
 		return getStateFromMeta(facing.getOpposite().ordinal());
 	}
 
 	@Override
-	public IPartSlot getSlotForPlacement(World world, BlockPos pos, IBlockState state, EnumFacing facing, float hitX, float hitY, float hitZ, EntityLivingBase placer) {
+	public IPartSlot getSlotForPlacement(World world, BlockPos pos, IBlockState state,
+										 EnumFacing facing, float hitX, float hitY,
+										 float hitZ, EntityLivingBase placer) {
 		return EnumFaceSlot.fromFace(facing.getOpposite());
 	}
 
@@ -35,13 +42,13 @@ public abstract class BlockSidedMultipart extends BlockSonarMultipart {
 	public IPartSlot getSlotFromWorld(IBlockAccess world, BlockPos pos, IBlockState state) {
 		return EnumFaceSlot.fromFace(getFaceFromState(state));
 	}
-	
+
 	public EnumFacing getFaceFromState(IBlockState state) {
 		return state.getValue(SonarProperties.ORIENTATION);
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return this.getDefaultState().withProperty(SonarProperties.ORIENTATION, EnumFacing.VALUES[meta]);
 	}
@@ -52,9 +59,8 @@ public abstract class BlockSidedMultipart extends BlockSonarMultipart {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	protected BlockStateContainer createBlockState() {
 		return new BlockStateContainer(this, SonarProperties.ORIENTATION);
 	}
-	
 }

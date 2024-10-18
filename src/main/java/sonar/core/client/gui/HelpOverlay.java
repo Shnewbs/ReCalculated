@@ -1,15 +1,13 @@
 package sonar.core.client.gui;
 
 import java.util.List;
-
 import sonar.core.helpers.FontHelper;
 import sonar.core.helpers.SonarHelper;
 
 public class HelpOverlay<G extends GuiSonarTile> {
 
-	public List<String> description;
-	public boolean completed;
-	public int left, top, width, height, colour;
+	public final List<String> description;
+	public final int left, top, width, height, colour;
 
 	public HelpOverlay(String key, int left, int top, int width, int height, int colour) {
 		this.description = SonarHelper.convertArray(FontHelper.translate(key).split("-"));
@@ -20,11 +18,11 @@ public class HelpOverlay<G extends GuiSonarTile> {
 		this.colour = colour;
 	}
 
-	public boolean isCompletedSuccess(G gui){
+	public boolean isCompletedSuccess(G gui) {
 		return false;
 	}
-	
-	public boolean canBeRendered(G gui){
+
+	public boolean canBeRendered(G gui) {
 		return false;
 	}
 }

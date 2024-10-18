@@ -1,107 +1,105 @@
 package sonar.core.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.inventory.Container;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.Identifier;
+import net.minecraftforge.fml.client.gui.screen.inventory.ContainerScreen;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GuiSonar extends GuiContainer implements IGuiOrigin {
+public abstract class GuiSonar extends ContainerScreen<Container> implements IGuiOrigin {
 
 	protected List<SonarTextField> fieldList = new ArrayList<>();
 	private boolean shouldReset = false;
 
-	///the gui which opened this one, generally null.
+	/// the gui which opened this one, generally null.
 	public Object origin;
 
-	public GuiSonar(Container container) {
-		super(container);
+	public GuiSonar(Container container, PlayerInventory inventory, Text title) {
+		super(container, inventory, title);
 	}
 
-	public abstract ResourceLocation getBackground();
+	public abstract Identifier getBackground();
 
-	//// RENDER METHODS \\\\
-
+	//// RENDER METHODS \\\\n
 	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		if (shouldReset) {
 			doReset();
 		}
-		this.drawDefaultBackground();
-		super.drawScreen(mouseX, mouseY, partialTicks);
-		this.renderHoveredToolTip(mouseX, mouseY);
+		this.renderBackground(matrices);
+		super.render(matrices, mouseX, mouseY, delta);
+		this.drawMouseoverTooltip(matrices, mouseX, mouseY);
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int x, int y) {
-		super.drawGuiContainerForegroundLayer(x, y);
-		fieldList.forEach(SonarTextField::drawTextBox);
+	protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
+		super.drawForeground(matrices, mouseX, mouseY);
+		fieldList.forEach(field -> field.render(matrices));
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float v, int i, int i1) {
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		Minecraft.getMinecraft().getTextureManager().bindTexture(this.getBackground());
-		drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+	protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		Minecraft.getInstance().getTextureManager().bindTexture(this.getBackground());
+		DrawableHelper.drawTexture(matrices, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight, this.backgroundWidth, this.backgroundHeight);
 	}
 
 	@Override
-	protected void renderHoveredToolTip(int x, int y) {
-		super.renderHoveredToolTip(x, y);
-		for (GuiButton guibutton : this.buttonList) {
-			if (guibutton.isMouseOver()) {
-				guibutton.drawButtonForegroundLayer(x, y);
+	protected void renderTooltip(MatrixStack matrices, int x, int y) {
+		super.renderTooltip(matrices, x, y);
+		for (ButtonWidget button : this.buttons) {
+			if (button.isHovered()) {
+				button.renderTooltip(matrices, x, y);
 				break;
 			}
 		}
 	}
 
-	//// STANDARD EVENTS \\\\
+	//// STANDARD EVENTS \\\
 
 	@Override
-	public void mouseClicked(int i, int j, int k) throws IOException {
-		super.mouseClicked(i, j, k);
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (super.mouseClicked(mouseX, mouseY, button)) {
+			return true;
+		}
 		for (SonarTextField field : fieldList) {
-			boolean focused = field.mouseClicked(i - guiLeft, j - guiTop, k);
+			boolean focused = field.mouseClicked(mouseX - x, mouseY - y, button);
 			if (focused) {
 				onTextFieldFocused(field);
 			}
 		}
+		return false;
 	}
 
 	@Override
-	protected void keyTyped(char c, int i) throws IOException {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		for (SonarTextField field : fieldList) {
 			if (field.isFocused()) {
-				if (c == 13 || c == 27) {
+				if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
 					field.setFocused(false);
 				} else {
-					field.textboxKeyTyped(c, i);
+					field.keyPressed(keyCode, scanCode, modifiers);
 					onTextFieldChanged(field);
 				}
-				return;
+				return true;
 			}
 		}
-		if (isCloseKey(i) && origin != null) {
-			FMLCommonHandler.instance().showGuiScreen(origin);
-			return;
+		if (isCloseKey(keyCode) && origin != null) {
+			Minecraft.getInstance().openScreen((Screen) origin);
+			return true;
 		}
-		super.keyTyped(c, i);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
-
 
 	public void onTextFieldChanged(SonarTextField field) {}
 
@@ -112,14 +110,14 @@ public abstract class GuiSonar extends GuiContainer implements IGuiOrigin {
 	}
 
 	public void doReset() {
-		this.buttonList.clear();
+		this.buttons.clear();
 		this.fieldList.clear();
-		this.initGui();
+		this.init();
 		shouldReset = false;
 	}
 
 	public void initButtons() {
-		this.buttonList.clear();
+		this.buttons.clear();
 	}
 
 	public SonarTextField getFocusedField() {
@@ -131,91 +129,84 @@ public abstract class GuiSonar extends GuiContainer implements IGuiOrigin {
 		return null;
 	}
 
-	public void bindTexture(ResourceLocation resource) {
-		mc.getTextureManager().bindTexture(resource);
+	public void bindTexture(Identifier resource) {
+		Minecraft.getInstance().getTextureManager().bindTexture(resource);
 	}
 
 	public void setOrigin(Object origin) {
 		this.origin = origin;
 	}
 
-
 	public void setZLevel(float zLevel) {
-		this.zLevel = zLevel;
+		this.setZOffset((int) zLevel);
 	}
 
 	public boolean isCloseKey(int keyCode) {
-		return keyCode == 1 || this.mc.gameSettings.keyBindInventory.isActiveAndMatches(keyCode);
+		return keyCode == GLFW.GLFW_KEY_ESCAPE || this.client.options.keyInventory.matchesKey(keyCode, 0);
 	}
 
 	@Override
 	public int getGuiLeft() {
-		return guiLeft;
+		return x;
 	}
 
 	@Override
 	public int getGuiTop() {
-		return guiTop;
+		return y;
 	}
 
+	//// RENDER METHODS \\\
 
-	//// RENDER METHODS \\\\
-
-	public void drawSonarCreativeTabHoveringText(String tabName, int mouseX, int mouseY) {
-		drawHoveringText(tabName, mouseX, mouseY);
+	public void drawSonarCreativeTabHoveringText(String tabName, MatrixStack matrices, int mouseX, int mouseY) {
+		renderTooltip(matrices, Lists.newArrayList(tabName), mouseX, mouseY);
 	}
 
-	public void drawSonarCreativeTabHoveringText(List<String> text, int mouseX, int mouseY) {
-		drawHoveringText(text, mouseX, mouseY);
+	public void drawSonarCreativeTabHoveringText(List<String> text, MatrixStack matrices, int mouseX, int mouseY) {
+		renderTooltip(matrices, text, mouseX, mouseY);
 	}
 
 	public void startNormalItemStackRender() {
-		GlStateManager.enableDepth();
-		RenderHelper.enableGUIStandardItemLighting();
-		sonar.core.helpers.RenderHelper.saveBlendState();
-		GlStateManager.translate(0.0F, 0.0F, 32.0F);
-		this.zLevel = 200.0F;
-		this.itemRender.zLevel = 200.0F;
+		RenderSystem.enableDepthTest();
+		RenderHelper.setupFor3DItems();
+		RenderSystem.translatef(0.0F, 0.0F, 32.0F);
+		this.setZOffset(200);
 	}
 
 	public void drawNormalItemStack(ItemStack stack, int x, int y) {
 		startNormalItemStackRender();
-		net.minecraft.client.gui.FontRenderer font = stack.getItem().getFontRenderer(stack);
+		TextRenderer font = stack.getItem().getFontRenderer(stack);
 		if (font == null)
-			font = fontRenderer;
-		this.itemRender.renderItemAndEffectIntoGUI(stack, x, y);
-		this.itemRender.renderItemOverlayIntoGUI(font, stack, x, y, "");
+			font = textRenderer;
+		this.itemRenderer.renderInGuiWithOverrides(stack, x, y);
+		this.itemRenderer.renderGuiItemOverlay(font, stack, x, y, "");
 		finishNormalItemStackRender();
 	}
 
 	public void finishNormalItemStackRender() {
-		this.zLevel = 0.0F;
-		this.itemRender.zLevel = 0.0F;
-
-		sonar.core.helpers.RenderHelper.restoreBlendState();
-		RenderHelper.disableStandardItemLighting();
-		GlStateManager.disableDepth();
+		this.setZOffset(0);
+		RenderHelper.setupForFlatItems();
+		RenderSystem.disableDepthTest();
 	}
 
-	public void drawNormalToolTip(ItemStack stack, int x, int y) {
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_LIGHTING);
-		this.renderToolTip(stack, x - guiLeft, y - guiTop);
-		GL11.glEnable(GL11.GL_LIGHTING);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting();
+	public void drawNormalToolTip(ItemStack stack, MatrixStack matrices, int x, int y) {
+		RenderSystem.disableDepthTest();
+		RenderSystem.disableLighting();
+		this.renderTooltip(matrices, stack, x - this.x, y - this.y);
+		RenderSystem.enableLighting();
+		RenderSystem.enableDepthTest();
+		net.minecraft.client.render.item.ItemRenderer.renderGuiItemModel();
 	}
 
-	public void drawSpecialToolTip(List<String> list, int x, int y, FontRenderer font) {
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_LIGHTING);
-		drawHoveringText(list, x - guiLeft, y - guiTop, font == null ? fontRenderer : font);
-		GL11.glEnable(GL11.GL_LIGHTING);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting();
+	public void drawSpecialToolTip(List<String> list, MatrixStack matrices, int x, int y, TextRenderer font) {
+		RenderSystem.disableDepthTest();
+		RenderSystem.disableLighting();
+		renderTooltip(matrices, list, x - this.x, y - this.y, font == null ? this.textRenderer : font);
+		RenderSystem.enableLighting();
+		RenderSystem.enableDepthTest();
+		net.minecraft.client.render.item.ItemRenderer.renderGuiItemModel();
 	}
 
-	public static void drawTransparentRect(int left, int top, int right, int bottom, int color) {
+	public static void drawTransparentRect(MatrixStack matrices, int left, int top, int right, int bottom, int color) {
 		if (left < right) {
 			int i = left;
 			left = right;
@@ -234,23 +225,19 @@ public abstract class GuiSonar extends GuiContainer implements IGuiOrigin {
 		float f2 = (float) (color & 255) / 255.0F;
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder vertexbuffer = tessellator.getBuffer();
-		sonar.core.helpers.RenderHelper.saveBlendState();
-		GlStateManager.enableBlend();
-		GlStateManager.color(f, f1, f2, f3);
-		GlStateManager.disableTexture2D();
-		GlStateManager.tryBlendFuncSeparate(770, 1, 1, 0);
-		GlStateManager.color(f, f1, f2, f3);
+		RenderSystem.enableBlend();
+		RenderSystem.setShaderColor(f, f1, f2, f3);
+		RenderSystem.disableTexture();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.setShaderColor(f, f1, f2, f3);
 		vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-		vertexbuffer.pos((double) left, (double) bottom, 0.0D).endVertex();
-		vertexbuffer.pos((double) right, (double) bottom, 0.0D).endVertex();
-		vertexbuffer.pos((double) right, (double) top, 0.0D).endVertex();
-		vertexbuffer.pos((double) left, (double) top, 0.0D).endVertex();
+		vertexbuffer.vertex((double) left, (double) bottom, 0.0D).next();
+		vertexbuffer.vertex((double) right, (double) bottom, 0.0D).next();
+		vertexbuffer.vertex((double) right, (double) top, 0.0D).next();
+		vertexbuffer.vertex((double) left, (double) top, 0.0D).next();
 		tessellator.draw();
-		GlStateManager.enableTexture2D();
-		GlStateManager.disableBlend();
-		GlStateManager.color(1, 1, 1, 1);
-		sonar.core.helpers.RenderHelper.restoreBlendState();
+		RenderSystem.enableTexture();
+		RenderSystem.disableBlend();
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 	}
-
-
 }

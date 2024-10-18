@@ -6,8 +6,7 @@ import java.util.function.Function;
 
 public class FunctionHelper {
 
-    public static final Function ARRAY = MAP -> new ArrayList<>();
+    public static final Function<Void, ArrayList<?>> ARRAY = (Void) -> new ArrayList<>();
 
-    public static final Function HASH_MAP = MAP -> new HashMap<>();
-
+    public static final Function<Void, HashMap<?, ?>> HASH_MAP = (Void) -> new HashMap<>();
 }

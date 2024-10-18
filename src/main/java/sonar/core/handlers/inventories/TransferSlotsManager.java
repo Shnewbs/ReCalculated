@@ -1,6 +1,6 @@
 package sonar.core.handlers.inventories;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -12,31 +12,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransferSlotsManager<T extends IInventory> {
-	public static TransferSlotsManager<IInventory> DEFAULT = new TransferSlotsManager<IInventory>() {
+	public static final TransferSlotsManager<IInventory> DEFAULT = new TransferSlotsManager<IInventory>() {
 		{
 			addPlayerInventory();
 		}
 	};
-	public static TransferSlots DISCHARGE_SLOT =  new TransferSlots<IInventory>(TransferType.TILE_INV, 1) {
-        @Override
-		public boolean canInsert(EntityPlayer player, IInventory inv, Slot slot, int pos, int slotID, ItemStack stack) {
+
+	public static final TransferSlots<IInventory> DISCHARGE_SLOT = new TransferSlots<IInventory>(TransferType.TILE_INV, 1) {
+		@Override
+		public boolean canInsert(PlayerEntity player, IInventory inv, Slot slot, int pos, int slotID, ItemStack stack) {
 			return DischargeValues.instance().getValue(stack) > 0 || EnergyTransferHandler.INSTANCE_SC.getItemHandler(stack) != null;
 		}
 	};
-    private List<TransferSlots<T>> slots = new ArrayList<>();
+
+	private final List<TransferSlots<T>> slots = new ArrayList<>();
 	public int current;
 	public int playerInvStart;
 	public int playerInvEnd;
-    public boolean hasPlayerInv;
+	public boolean hasPlayerInv;
 
-    public TransferSlotsManager() {}
+	public TransferSlotsManager() {}
 
-    public TransferSlotsManager(int tileSize){
-    	this.addTransferSlot(new TransferSlots(TransferType.TILE_INV, tileSize));
-    	this.addPlayerInventory();
+	public TransferSlotsManager(int tileSize) {
+		this.addTransferSlot(new TransferSlots(TransferType.TILE_INV, tileSize));
+		this.addPlayerInventory();
 	}
 
-	public void addTransferSlot(TransferSlots transferSlots) {
+	public void addTransferSlot(TransferSlots<T> transferSlots) {
 		transferSlots.start = current;
 		transferSlots.end = current + transferSlots.size;
 		current += transferSlots.size;
@@ -45,22 +47,22 @@ public class TransferSlotsManager<T extends IInventory> {
 
 	public void addPlayerInventory() {
 		playerInvStart = current;
-		addTransferSlot(new TransferSlots(TransferType.PLAYER_INV, 9 * 3));
-		addTransferSlot(new TransferSlots(TransferType.PLAYER_HOTBAR, 9));
+		addTransferSlot(new TransferSlots<>(TransferType.PLAYER_INV, 9 * 3));
+		addTransferSlot(new TransferSlots<>(TransferType.PLAYER_HOTBAR, 9));
 		playerInvEnd = current;
 		hasPlayerInv = true;
 	}
-	
+
 	public void addPlayerMainInventory() {
 		playerInvStart = current;
-		addTransferSlot(new TransferSlots(TransferType.PLAYER_INV, 9 * 3));
+		addTransferSlot(new TransferSlots<>(TransferType.PLAYER_INV, 9 * 3));
 		playerInvEnd = current;
 		hasPlayerInv = true;
 	}
-	
+
 	public void addPlayerHotbar() {
 		playerInvStart = current;
-		addTransferSlot(new TransferSlots(TransferType.PLAYER_HOTBAR, 9));
+		addTransferSlot(new TransferSlots<>(TransferType.PLAYER_HOTBAR, 9));
 		playerInvEnd = current;
 		hasPlayerInv = true;
 	}
@@ -74,11 +76,11 @@ public class TransferSlotsManager<T extends IInventory> {
 		return slots.get(slots.size() - 1);
 	}
 
-	public ItemStack transferStackInSlot(ContainerSonar c, T inv, EntityPlayer player, int slotID) {
+	public ItemStack transferStackInSlot(ContainerSonar c, T inv, PlayerEntity player, int slotID) {
 		ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = c.inventorySlots.get(slotID);
+		Slot slot = c.inventorySlots.get(slotID);
 
-        if (slot != null && slot.getHasStack()) {
+		if (slot != null && slot.getHasStack()) {
 			ItemStack itemstack1 = slot.getStack();
 			itemstack = itemstack1.copy();
 			TransferSlots<T> settings = getTransferSettings(slotID);
@@ -90,7 +92,7 @@ public class TransferSlotsManager<T extends IInventory> {
 						}
 					}
 				}
-                slot.onSlotChange(itemstack1, itemstack);
+				slot.onSlotChange(itemstack1, itemstack);
 			} else if (this.hasPlayerInv && !c.mergeSonarStack(itemstack1, playerInvStart, playerInvEnd, false)) {
 				return ItemStack.EMPTY;
 			}
@@ -107,7 +109,7 @@ public class TransferSlotsManager<T extends IInventory> {
 		return itemstack;
 	}
 
-    public enum TransferType {
+	public enum TransferType {
 		TILE_INV, PLAYER_INV, PLAYER_HOTBAR;
 
 		public boolean isPlayerInv() {
@@ -121,8 +123,8 @@ public class TransferSlotsManager<T extends IInventory> {
 			super(type, size);
 		}
 
-        @Override
-		public boolean canInsert(EntityPlayer player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
+		@Override
+		public boolean canInsert(PlayerEntity player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
 			return false;
 		}
 	}
@@ -133,8 +135,8 @@ public class TransferSlotsManager<T extends IInventory> {
 			super(type, size);
 		}
 
-        @Override
-		public boolean canInsert(EntityPlayer player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
+		@Override
+		public boolean canInsert(PlayerEntity player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
 			return slot.isItemValid(stack);
 		}
 	}
@@ -149,7 +151,7 @@ public class TransferSlotsManager<T extends IInventory> {
 			this.size = size;
 		}
 
-		public boolean canInsert(EntityPlayer player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
+		public boolean canInsert(PlayerEntity player, T inv, Slot slot, int pos, int slotID, ItemStack stack) {
 			return true;
 		}
 	}

@@ -1,20 +1,22 @@
 package sonar.core.common.item;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.creativetab.CreativeModeTabs;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.NonNullList;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
-public class SonarMetaItem extends SonarItem {
+public class SonarMetaItem extends Item {
 
 	public int numSubItems = 1;
 
-	public SonarMetaItem(int numSubItems) {
+	public SonarMetaItem(int numSubItems, Item.Properties properties) {
+		super(properties);
 		this.numSubItems = numSubItems;
-		this.hasSubtypes = true;
 	}
 
 	@Override
@@ -23,18 +25,18 @@ public class SonarMetaItem extends SonarItem {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> list) {
-		if (this.isInCreativeTab(tab)) {
+	@OnlyIn(Dist.CLIENT)
+	public void fillItemCategory(@Nonnull CreativeModeTab tab, @Nonnull NonNullList<ItemStack> items) {
+		if (allowedIn(tab)) {
 			for (int i = 0; i < numSubItems; i++) {
-				list.add(new ItemStack(this, 1, i));
+				items.add(new ItemStack(this, 1, i));
 			}
 		}
 	}
 
 	@Nonnull
-    @Override
-	public String getUnlocalizedName(ItemStack stack) {
-		return getUnlocalizedName() + '.' + stack.getItemDamage();
+	@Override
+	public String getDescriptionId(ItemStack stack) {
+		return getDescriptionId() + '.' + stack.getDamageValue();
 	}
 }

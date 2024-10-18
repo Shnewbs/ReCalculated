@@ -2,7 +2,7 @@ package sonar.core.api.inventories;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import sonar.core.api.ISonarStack;
 import sonar.core.helpers.NBTHelper.SyncType;
@@ -38,54 +38,54 @@ public class StoredItemStack implements ISonarStack<StoredItemStack> {
 		}
 	}
 
-    @Override
+	@Override
 	public void add(StoredItemStack stack) {
 		if (equalStack(stack.item)) {
 			stored += stack.stored;
 		}
 	}
 
-    @Override
+	@Override
 	public void remove(StoredItemStack stack) {
 		if (equalStack(stack.item)) {
 			stored -= stack.stored;
 		}
 	}
 
-    @Override
+	@Override
 	public StoredItemStack copy() {
 		return new StoredItemStack(this.item, this.stored);
 	}
 
-    public StoredItemStack setStackSize(StoredItemStack stack) {
-        this.stored = stack == null ? 0 : stack.getStackSize();
-        return this;
-    }
+	public StoredItemStack setStackSize(StoredItemStack stack) {
+		this.stored = stack == null ? 0 : stack.getStackSize();
+		return this;
+	}
 
-    @Override
+	@Override
 	public StoredItemStack setStackSize(long size) {
 		this.stored = size;
 		return this;
 	}
 
-    public static boolean isEqualStack(ItemStack main, ItemStack adding){
-        return !main.isEmpty() && !adding.isEmpty() && main.isItemEqual(adding) && ItemStack.areItemStackTagsEqual(adding, main);
-    }
-    
+	public static boolean isEqualStack(ItemStack main, ItemStack adding) {
+		return !main.isEmpty() && !adding.isEmpty() && main.isItemEqual(adding) && ItemStack.areItemStackTagsEqual(adding, main);
+	}
+
 	public boolean equalStack(ItemStack stack) {
-        return isEqualStack(item, stack);
+		return isEqualStack(item, stack);
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
-		item = new ItemStack(nbt);
+	public void readData(CompoundNBT nbt, SyncType type) {
+		item = ItemStack.of(nbt);
 		stored = nbt.getLong("stored");
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
-		item.writeToNBT(nbt);
-		nbt.setLong("stored", stored);
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) {
+		item.save(nbt);
+		nbt.putLong("stored", stored);
 		return nbt;
 	}
 
@@ -98,10 +98,11 @@ public class StoredItemStack implements ISonarStack<StoredItemStack> {
 		buf.writeLong(storedStack.stored);
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof StoredItemStack) {
 			StoredItemStack target = (StoredItemStack) obj;
-            return equalStack(target.item) && this.stored == target.stored;
+			return equalStack(target.item) && this.stored == target.stored;
 		}
 		return false;
 	}
@@ -110,7 +111,7 @@ public class StoredItemStack implements ISonarStack<StoredItemStack> {
 		return item;
 	}
 
-    @Override
+	@Override
 	public long getStackSize() {
 		return stored;
 	}
@@ -120,11 +121,11 @@ public class StoredItemStack implements ISonarStack<StoredItemStack> {
 	}
 
 	public int getItemDamage() {
-		return item.getItemDamage();
+		return item.getDamageValue();
 	}
 
-	public NBTTagCompound getTagCompound() {
-		return item.getTagCompound();
+	public CompoundNBT getTagCompound() {
+		return item.getTag();
 	}
 
 	public ItemStack getFullStack() {
@@ -154,9 +155,10 @@ public class StoredItemStack implements ISonarStack<StoredItemStack> {
 		return StorageTypes.ITEMS;
 	}
 
+	@Override
 	public String toString() {
 		if (!item.isEmpty()) {
-            return this.stored + "x" + this.item.getUnlocalizedName() + '@' + item.getItemDamage();
+			return this.stored + "x" + this.item.getDescriptionId() + '@' + item.getDamageValue();
 		} else {
 			return super.toString() + " : EMPTY";
 		}

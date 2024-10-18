@@ -1,23 +1,23 @@
 package sonar.core.api.energy;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import sonar.core.api.ISonarStack;
 import sonar.core.handlers.energy.IEnergyTransferProxy;
 import sonar.core.helpers.NBTHelper.SyncType;
 
 /**
- * should only be in RF, inaccuracy due to conversion is a price we must pay at the moment
+ * Class used to handle stored energy stacks, conversion, and synchronization.
  */
-public class StoredEnergyStack implements ISonarStack<StoredEnergyStack>{
+public class StoredEnergyStack implements ISonarStack<StoredEnergyStack> {
 
 	public long stored, capacity, input, output, usage;
 	public boolean hasStorage, hasInput, hasOutput, hasUsage;
 	public EnergyType energyType;
 
-    public StoredEnergyStack() {
-    }
+	public StoredEnergyStack() {
+	}
 
 	public StoredEnergyStack(EnergyType type) {
 		this.energyType = type;
@@ -75,7 +75,7 @@ public class StoredEnergyStack implements ISonarStack<StoredEnergyStack>{
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
+	public void readData(CompoundNBT nbt, SyncType type) {
 		energyType = EnergyType.readFromNBT(nbt, "energytype");
 		hasStorage = nbt.getBoolean("hS");
 		hasInput = nbt.getBoolean("hI");
@@ -98,43 +98,46 @@ public class StoredEnergyStack implements ISonarStack<StoredEnergyStack>{
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) {
 		EnergyType.writeToNBT(energyType, nbt, "energytype");
-		nbt.setBoolean("hS", hasStorage);
-		nbt.setBoolean("hI", hasInput);
-		nbt.setBoolean("hO", hasOutput);
-		nbt.setBoolean("hU", hasUsage);
+		nbt.putBoolean("hS", hasStorage);
+		nbt.putBoolean("hI", hasInput);
+		nbt.putBoolean("hO", hasOutput);
+		nbt.putBoolean("hU", hasUsage);
 
 		if (hasStorage) {
-			nbt.setLong("s", stored);
-			nbt.setLong("c", capacity);
+			nbt.putLong("s", stored);
+			nbt.putLong("c", capacity);
 		}
 		if (hasInput) {
-			nbt.setLong("i", input);
+			nbt.putLong("i", input);
 		}
 		if (hasOutput) {
-			nbt.setLong("o", output);
+			nbt.putLong("o", output);
 		}
 		if (hasUsage) {
-			nbt.setLong("u", usage);
+			nbt.putLong("u", usage);
 		}
 		return nbt;
 	}
 
 	public static StoredEnergyStack readFromBuf(ByteBuf buf) {
-    	StoredEnergyStack energyStack = new StoredEnergyStack();
+		StoredEnergyStack energyStack = new StoredEnergyStack();
 		energyStack.readData(ByteBufUtils.readTag(buf), SyncType.SAVE);
 		return energyStack;
 	}
 
 	public static void writeToBuf(ByteBuf buf, StoredEnergyStack energyStack) {
-		ByteBufUtils.writeTag(buf, energyStack.writeData(new NBTTagCompound(), SyncType.SAVE));
+		ByteBufUtils.writeTag(buf, energyStack.writeData(new CompoundNBT(), SyncType.SAVE));
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof StoredEnergyStack) {
 			StoredEnergyStack target = (StoredEnergyStack) obj;
-            return this.stored == target.stored && this.capacity == target.capacity && this.input == target.input && this.output == target.output && this.usage == target.usage && this.energyType.getName().equals(target.energyType.getName());
+			return this.stored == target.stored && this.capacity == target.capacity && this.input == target.input
+					&& this.output == target.output && this.usage == target.usage
+					&& this.energyType.getName().equals(target.energyType.getName());
 		}
 		return false;
 	}
@@ -144,7 +147,7 @@ public class StoredEnergyStack implements ISonarStack<StoredEnergyStack>{
 		return StorageTypes.ENERGY;
 	}
 
-    @Override
+	@Override
 	public StoredEnergyStack copy() {
 		StoredEnergyStack stack = new StoredEnergyStack(energyType);
 		stack.stored = stored;
@@ -171,17 +174,17 @@ public class StoredEnergyStack implements ISonarStack<StoredEnergyStack>{
 			if (stack.usage > this.usage)
 				this.usage += stack.usage;
 
-			if(stack.hasOutput){
-				this.hasOutput=true;
+			if (stack.hasOutput) {
+				this.hasOutput = true;
 			}
-			if(stack.hasStorage){
-				this.hasStorage=true;
+			if (stack.hasStorage) {
+				this.hasStorage = true;
 			}
-			if(stack.hasUsage){
-				this.hasUsage=true;
+			if (stack.hasUsage) {
+				this.hasUsage = true;
 			}
-			if(stack.hasInput){
-				this.hasInput=true;
+			if (stack.hasInput) {
+				this.hasInput = true;
 			}
 		}
 	}

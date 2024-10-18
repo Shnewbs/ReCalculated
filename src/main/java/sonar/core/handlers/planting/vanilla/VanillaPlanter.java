@@ -2,7 +2,7 @@ package sonar.core.handlers.planting.vanilla;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
@@ -15,9 +15,9 @@ import sonar.core.common.item.SonarSeeds;
 public class VanillaPlanter implements ISonarPlanter {
 
 	@Override
-	public boolean canTierPlant(ItemStack seed, int tier){
-		if(seed.getItem() instanceof SonarSeeds){
-			return ((SonarSeeds)seed.getItem()).canTierUse(tier);
+	public boolean canTierPlant(ItemStack seed, int tier) {
+		if (seed.getItem() instanceof SonarSeeds) {
+			return ((SonarSeeds) seed.getItem()).canTierUse(tier);
 		}
 		return true;
 	}
@@ -29,17 +29,17 @@ public class VanillaPlanter implements ISonarPlanter {
 
 	@Override
 	public boolean canPlant(ItemStack seed, World world, BlockPos pos) {
-		if(world.isAirBlock(pos)){
-			BlockPos offsetPos = pos.offset(EnumFacing.DOWN);
+		if (world.isAirBlock(pos)) {
+			BlockPos offsetPos = pos.offset(Direction.DOWN);
 			IBlockState state = world.getBlockState(offsetPos);
-			return state.getBlock().canSustainPlant(state, world, offsetPos, EnumFacing.UP, (IPlantable)seed.getItem());
+			return state.getBlock().canSustainPlant(state, world, offsetPos, Direction.UP, (IPlantable) seed.getItem());
 		}
 		return false;
 	}
 
 	@Override
 	public boolean doPlant(ItemStack seed, World world, BlockPos pos) {
-		IPlantable plant = (IPlantable)seed.getItem();
+		IPlantable plant = (IPlantable) seed.getItem();
 		world.setBlockState(pos, plant.getPlant(world, pos));
 		return true;
 	}

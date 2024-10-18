@@ -22,7 +22,7 @@ public abstract class ConnectedTile extends SonarBlock implements IConnectedBloc
 		this.target = target;
 	}
 
-    public int target;
+	public int target;
 	public static final PropertySonarFacing NORTH = PropertySonarFacing.create("north", EnumFacing.NORTH);
 	public static final PropertySonarFacing EAST = PropertySonarFacing.create("east", EnumFacing.EAST);
 	public static final PropertySonarFacing SOUTH = PropertySonarFacing.create("south", EnumFacing.SOUTH);
@@ -49,8 +49,8 @@ public abstract class ConnectedTile extends SonarBlock implements IConnectedBloc
 		IBlockState state = world.getBlockState(new BlockPos(x, y, z));
 		IBlockState block = world.getBlockState(new BlockPos(x + side.getFrontOffsetX(), y + side.getFrontOffsetY(), z + side.getFrontOffsetZ()));
 		int meta = state.getBlock().getMetaFromState(state);
-        return type(state, block, meta, block.getBlock().getMetaFromState(block));
-    }
+		return type(state, block, meta, block.getBlock().getMetaFromState(block));
+	}
 
 	public static boolean type(IBlockState state1, IBlockState state2, int m1, int m2) {
 		Block block1 = state1.getBlock();
@@ -62,9 +62,9 @@ public abstract class ConnectedTile extends SonarBlock implements IConnectedBloc
 
 				if (block2 instanceof IConnectedBlock) {
 					int[] connections2 = ((IConnectedBlock) block2).getConnections();
-                    for (int aConnections1 : connections1) {
-                        for (int aConnections2 : connections2) {
-                            if (aConnections1 == aConnections2)
+					for (int aConnections1 : connections1) {
+						for (int aConnections2 : connections2) {
+							if (aConnections1 == aConnections2)
 								return true;
 						}
 					}
@@ -74,18 +74,18 @@ public abstract class ConnectedTile extends SonarBlock implements IConnectedBloc
 		return false;
 	}
 
-    @Override
+	@Override
 	public int getMetaFromState(IBlockState state) {
 		return 0;
 	}
 
-    @Override
+	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return this.getDefaultState();
 	}
 
-    @Nonnull
-    @Override
+	@Nonnull
+	@Override
 	public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess w, BlockPos pos) {
 		int x = pos.getX();
 		int y = pos.getY();
@@ -93,9 +93,9 @@ public abstract class ConnectedTile extends SonarBlock implements IConnectedBloc
 		return state.withProperty(NORTH, checkBlockInDirection(w, x, y, z, EnumFacing.NORTH)).withProperty(SOUTH, checkBlockInDirection(w, x, y, z, EnumFacing.SOUTH)).withProperty(WEST, checkBlockInDirection(w, x, y, z, EnumFacing.WEST)).withProperty(EAST, checkBlockInDirection(w, x, y, z, EnumFacing.EAST)).withProperty(UP, checkBlockInDirection(w, x, y, z, EnumFacing.UP)).withProperty(DOWN, checkBlockInDirection(w, x, y, z, EnumFacing.DOWN));
 	}
 
-    @Override
+	@Override
 	protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, DOWN, UP);
+		return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, DOWN, UP);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class BlockStateSpecial<T extends TileEntity, S extends IBlockState> exte
 	private final S state;
 
 	public BlockStateSpecial(S state, BlockPos pos, T tile) {
-		super(state.getBlock(), state.getProperties());
+		super(state.getBlock(), state.getProperties().toImmutableMap());
 		this.state = state;
 		this.tile = tile;
 		this.pos = pos;

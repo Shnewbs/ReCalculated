@@ -3,10 +3,10 @@ package sonar.core.api.utils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * an object with a blocks x, y and z coordinates
+ * Object representing a block's x, y, and z coordinates along with its dimension.
  */
 public class BlockCoords {
 
@@ -28,21 +28,16 @@ public class BlockCoords {
 	private int dimension;
 	private boolean hasDimension;
 
-    /**
-     * @param x block x coordinate
-	 * @param y block y coordinate
-     * @param z block z coordinate
-     */
 	public BlockCoords(int x, int y, int z) {
 		this.pos = new BlockPos(x, y, z);
 		this.hasDimension = false;
 	}
 
-    @Deprecated
+	@Deprecated
 	public BlockCoords(int x, int y, int z, World world) {
 		this.pos = new BlockPos(x, y, z);
 		this.hasDimension = true;
-		this.dimension = world.provider.getDimension();
+		this.dimension = world.dimension();
 	}
 
 	public BlockCoords(int x, int y, int z, int dimension) {
@@ -59,7 +54,7 @@ public class BlockCoords {
 	public BlockCoords(BlockPos pos, World world) {
 		this.pos = pos;
 		this.hasDimension = true;
-		this.dimension = world.provider.getDimension();
+		this.dimension = world.dimension();
 	}
 
 	public BlockCoords(BlockPos pos, int dimension) {
@@ -69,41 +64,29 @@ public class BlockCoords {
 	}
 
 	public BlockCoords(TileEntity tile) {
-		this.pos = tile.getPos();
+		this.pos = tile.getBlockPos();
 		this.hasDimension = true;
-		this.dimension = tile.getWorld().provider.getDimension();
-    }
+		this.dimension = tile.getLevel().dimension();
+	}
 
 	public BlockCoords(TileEntity tile, int dimension) {
-		this.pos = tile.getPos();
+		this.pos = tile.getBlockPos();
 		this.hasDimension = true;
 		this.dimension = dimension;
 	}
 
-    /**
-     * @return blocks position
-     */
 	public BlockPos getBlockPos() {
 		return pos;
 	}
 
-    /**
-     * @return blocks X coordinates
-     */
 	public int getX() {
 		return pos.getX();
 	}
 
-    /**
-     * @return blocks Y coordinates
-     */
 	public int getY() {
 		return pos.getY();
 	}
 
-    /**
-     * @return blocks Z coordinates
-     */
 	public int getZ() {
 		return pos.getZ();
 	}
@@ -120,9 +103,6 @@ public class BlockCoords {
 		this.pos = new BlockPos(pos.getX(), pos.getY(), z);
 	}
 
-    /**
-     * @return dimension
-     */
 	public int getDimension() {
 		return this.dimension;
 	}
@@ -136,10 +116,9 @@ public class BlockCoords {
 	}
 
 	public TileEntity getTileEntity(World world) {
-		return world.getTileEntity(pos);
+		return world.getBlockEntity(pos);
 	}
 
-	
 	public Block getBlock() {
 		if (this.hasDimension()) {
 			return getWorld().getBlockState(pos).getBlock();
@@ -147,12 +126,11 @@ public class BlockCoords {
 			return null;
 		}
 	}
-	
+
 	public IBlockState getBlockState(World world) {
 		return world.getBlockState(pos);
 	}
 
-	
 	public IBlockState getBlockState() {
 		if (this.hasDimension()) {
 			return getWorld().getBlockState(pos);
@@ -163,34 +141,32 @@ public class BlockCoords {
 
 	public TileEntity getTileEntity() {
 		if (this.hasDimension()) {
-			return getWorld().getTileEntity(pos);
+			return getWorld().getBlockEntity(pos);
 		} else {
 			return null;
 		}
 	}
-	
-	/**do not use on client side!*/	
-	
+
 	public World getWorld() {
-        return SonarCore.proxy.getDimension(getDimension());
-	}
-	
-    public boolean insideChunk(ChunkPos pos) {
-        return pos.x >> 4 == getX() >> 4 && pos.z >> 4 == getZ() >> 4;
-    }
-
-    public boolean insideChunk(int chunkX, int chunkZ) {
-        return chunkX == getX() >> 4 && chunkZ == getZ() >> 4;
+		return SonarCore.proxy.getDimension(getDimension());
 	}
 
-	public boolean isChunkLoaded(World world){
-		return world.isBlockLoaded(pos, false);
+	public boolean insideChunk(ChunkPos pos) {
+		return pos.x >> 4 == getX() >> 4 && pos.z >> 4 == getZ() >> 4;
 	}
-	
-	public boolean isChunkLoaded(){
-		return getWorld().isBlockLoaded(pos, false);
+
+	public boolean insideChunk(int chunkX, int chunkZ) {
+		return chunkX == getX() >> 4 && chunkZ == getZ() >> 4;
 	}
-	
+
+	public boolean isChunkLoaded(World world) {
+		return world.hasChunkAt(pos);
+	}
+
+	public boolean isChunkLoaded() {
+		return getWorld().hasChunkAt(pos);
+	}
+
 	public static void writeToBuf(ByteBuf tag, BlockCoords coords) {
 		tag.writeInt(coords.pos.getX());
 		tag.writeInt(coords.pos.getY());
@@ -202,74 +178,74 @@ public class BlockCoords {
 		return new BlockCoords(tag.readInt(), tag.readInt(), tag.readInt(), tag.readInt());
 	}
 
-	public static NBTTagCompound writeToNBT(NBTTagCompound tag, BlockCoords coords) {
-		tag.setInteger(X, coords.getX());
-		tag.setInteger(Y, coords.getY());
-		tag.setInteger(Z, coords.getZ());
-		tag.setBoolean(HAS_DIMENSION, coords.hasDimension);
-		tag.setInteger(DIMENSION, coords.dimension);
+	public static CompoundNBT writeToNBT(CompoundNBT tag, BlockCoords coords) {
+		tag.putInt(X, coords.getX());
+		tag.putInt(Y, coords.getY());
+		tag.putInt(Z, coords.getZ());
+		tag.putBoolean(HAS_DIMENSION, coords.hasDimension);
+		tag.putInt(DIMENSION, coords.dimension);
 		return tag;
 	}
 
-	public static boolean hasCoords(NBTTagCompound tag) {
-		return tag.hasKey(X) && tag.hasKey(Y) && tag.hasKey("z");
+	public static boolean hasCoords(CompoundNBT tag) {
+		return tag.contains(X) && tag.contains(Y) && tag.contains(Z);
 	}
 
-	public static BlockCoords readFromNBT(NBTTagCompound tag) {
+	public static BlockCoords readFromNBT(CompoundNBT tag) {
 		if (tag.getBoolean(HAS_DIMENSION)) {
-			return new BlockCoords(tag.getInteger(X), tag.getInteger(Y), tag.getInteger(Z), tag.getInteger(DIMENSION));
+			return new BlockCoords(tag.getInt(X), tag.getInt(Y), tag.getInt(Z), tag.getInt(DIMENSION));
 		}
-		return new BlockCoords(tag.getInteger(X), tag.getInteger(Y), tag.getInteger(Z));
+		return new BlockCoords(tag.getInt(X), tag.getInt(Y), tag.getInt(Z));
 	}
 
-	public static NBTTagCompound writeBlockCoords(NBTTagCompound tag, List<BlockCoords> coords, String tagName) {
-		NBTTagList list = new NBTTagList();
+	public static CompoundNBT writeBlockCoords(CompoundNBT tag, List<BlockCoords> coords, String tagName) {
+		ListNBT list = new ListNBT();
 		if (coords != null) {
-            for (BlockCoords coord : coords) {
-                if (coord != null) {
-					NBTTagCompound compound = new NBTTagCompound();
-                    writeToNBT(compound, coord);
-					list.appendTag(compound);
+			for (BlockCoords coord : coords) {
+				if (coord != null) {
+					CompoundNBT compound = new CompoundNBT();
+					writeToNBT(compound, coord);
+					list.add(compound);
 				}
 			}
 		}
-		tag.setTag(tagName, list);
+		tag.put(tagName, list);
 		return tag;
 	}
 
-	public static NBTTagCompound writeBlockCoords(NBTTagCompound tag, BlockCoords[] coords) {
-		NBTTagList list = new NBTTagList();
+	public static CompoundNBT writeBlockCoords(CompoundNBT tag, BlockCoords[] coords) {
+		ListNBT list = new ListNBT();
 		if (coords != null) {
 			for (int i = 0; i < coords.length; i++) {
 				if (coords[i] != null) {
-					NBTTagCompound compound = new NBTTagCompound();
-					compound.setByte("Slot", (byte) i);
+					CompoundNBT compound = new CompoundNBT();
+					compound.putByte("Slot", (byte) i);
 					writeToNBT(compound, coords[i]);
-					list.appendTag(compound);
+					list.add(compound);
 				}
 			}
 		}
-		tag.setTag("BlockCoords", list);
+		tag.put("BlockCoords", list);
 		return tag;
 	}
 
-	public static ArrayList<BlockCoords> readBlockCoords(NBTTagCompound tag, String tagName) {
-        ArrayList<BlockCoords> coords = new ArrayList<>();
-		if (tag.hasKey(tagName)) {
-			NBTTagList list = tag.getTagList(tagName, 10);
-			for (int i = 0; i < list.tagCount(); i++) {
-				NBTTagCompound compound = list.getCompoundTagAt(i);
+	public static ArrayList<BlockCoords> readBlockCoords(CompoundNBT tag, String tagName) {
+		ArrayList<BlockCoords> coords = new ArrayList<>();
+		if (tag.contains(tagName)) {
+			ListNBT list = tag.getList(tagName, 10);
+			for (int i = 0; i < list.size(); i++) {
+				CompoundNBT compound = list.getCompound(i);
 				coords.add(readFromNBT(compound));
 			}
 		}
 		return coords;
 	}
 
-	public static BlockCoords[] readBlockCoords(NBTTagCompound tag, int listSize) {
-		NBTTagList list = tag.getTagList("BlockCoords", 10);
+	public static BlockCoords[] readBlockCoords(CompoundNBT tag, int listSize) {
+		ListNBT list = tag.getList("BlockCoords", 10);
 		BlockCoords[] coords = new BlockCoords[listSize];
-		for (int i = 0; i < list.tagCount(); i++) {
-			NBTTagCompound compound = list.getCompoundTagAt(i);
+		for (int i = 0; i < list.size(); i++) {
+			CompoundNBT compound = list.getCompound(i);
 			byte b = compound.getByte("Slot");
 			if (b >= 0 && b < listSize) {
 				coords[b] = readFromNBT(compound);
@@ -278,6 +254,7 @@ public class BlockCoords {
 		return coords;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof BlockCoords)) {
 			return false;
@@ -286,6 +263,7 @@ public class BlockCoords {
 		return pos.getX() == coords.pos.getX() && pos.getY() == coords.pos.getY() && pos.getZ() == coords.pos.getZ() && this.dimension == coords.dimension;
 	}
 
+	@Override
 	public int hashCode() {
 		int result = 1;
 		result = 37 * result + (hasDimension ? 0 : 1);
@@ -297,7 +275,7 @@ public class BlockCoords {
 	}
 
 	public static boolean equalCoords(BlockCoords coords1, BlockCoords coords2) {
-        return coords1 == null && coords2 == null || coords1 == null || coords2 != null && (coords1.pos.getX() == coords2.pos.getX() && coords1.pos.getY() == coords2.pos.getY() && coords1.pos.getZ() == coords2.pos.getZ() && coords1.dimension == coords2.dimension);
+		return coords1 == null && coords2 == null || coords1 == null || coords2 != null && (coords1.pos.getX() == coords2.pos.getX() && coords1.pos.getY() == coords2.pos.getY() && coords1.pos.getZ() == coords2.pos.getZ() && coords1.dimension == coords2.dimension);
 	}
 
 	public static boolean equalCoordArrays(BlockCoords[] coords1, BlockCoords[] coords2) {
@@ -305,7 +283,6 @@ public class BlockCoords {
 			return false;
 		}
 		for (int i = 0; i < coords1.length; i++) {
-
 			if (!equalCoords(coords1[i], coords2[i])) {
 				return false;
 			}
@@ -313,10 +290,11 @@ public class BlockCoords {
 		return true;
 	}
 
-	public static BlockCoords translateCoords(BlockCoords coords, EnumFacing dir) {
-		return new BlockCoords(coords.getX() + dir.getFrontOffsetX(), coords.getY() + dir.getFrontOffsetY(), coords.getZ() + dir.getFrontOffsetZ(), coords.dimension);
+	public static BlockCoords translateCoords(BlockCoords coords, Direction dir) {
+		return new BlockCoords(coords.getX() + dir.getStepX(), coords.getY() + dir.getStepY(), coords.getZ() + dir.getStepZ(), coords.dimension);
 	}
 
+	@Override
 	public String toString() {
 		return "X: " + getX() + " Y: " + getY() + " Z: " + getZ() + " D: " + dimension;
 	}

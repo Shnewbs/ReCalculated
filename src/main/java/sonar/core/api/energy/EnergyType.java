@@ -1,8 +1,11 @@
 package sonar.core.api.energy;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
-/** used for the various energy types created by different mods You can create one yourself for custom energy systems NOTE: this may not accommodate for all energy systems as some have far more to them*/
+/**
+ * Enum representing different energy types created by various mods.
+ * Can be extended for custom energy systems.
+ */
 public enum EnergyType {
 
 	FE("Forge Energy", "FE", "FE/T"),
@@ -12,9 +15,9 @@ public enum EnergyType {
 	MJ("Minecraft Joules", "J", "J/T"),
 	AE("Applied Energistics", "AE", "AE/t");
 
-	private String name = "";
-	private String storage = "";
-	private String usage = "";
+	private String name;
+	private String storage;
+	private String usage;
 
 	EnergyType(String name, String storage, String usage) {
 		this.name = name;
@@ -34,26 +37,25 @@ public enum EnergyType {
 		return usage;
 	}
 
-	/**COMPATIBLITY ONLY - for energy types which were saved under their storage suffix*/
-	public static EnergyType readFromNBT(NBTTagCompound tag, String tagName){
-		String storage_name = tag.getString(tagName);
-		if(!storage_name.isEmpty()){
-			for(EnergyType type : EnergyType.values()){
-				if(type.name.equals(storage_name)){
+	/** Compatibility - for energy types saved under their storage suffix */
+	public static EnergyType readFromNBT(CompoundNBT tag, String tagName) {
+		String storageName = tag.getString(tagName);
+		if (!storageName.isEmpty()) {
+			for (EnergyType type : EnergyType.values()) {
+				if (type.name.equals(storageName)) {
 					return type;
 				}
 			}
 			return FE;
-		}else{
-			int storage_ordinal = tag.getInteger(tagName);
-			return EnergyType.values()[storage_ordinal];
+		} else {
+			int storageOrdinal = tag.getInt(tagName);
+			return EnergyType.values()[storageOrdinal];
 		}
 	}
 
-	/**COMPATIBLITY ONLY - for energy types which were saved under their storage suffix*/
-	public static NBTTagCompound writeToNBT(EnergyType type, NBTTagCompound tag, String tagName){
-		tag.setInteger(tagName, type.ordinal());
+	/** Compatibility - for energy types saved under their storage suffix */
+	public static CompoundNBT writeToNBT(EnergyType type, CompoundNBT tag, String tagName) {
+		tag.putInt(tagName, type.ordinal());
 		return tag;
 	}
-
 }

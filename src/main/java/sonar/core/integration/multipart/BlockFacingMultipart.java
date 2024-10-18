@@ -9,20 +9,26 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-/** for multiparts that can face anywhere, except up and down*/
+/**
+ * Abstract class for multiparts that can face anywhere, except up and down.
+ */
 public abstract class BlockFacingMultipart extends BlockSidedMultipart {
 
 	public BlockFacingMultipart(Material material) {
 		super(material);
 	}
-	
-	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+
+	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing,
+											float hitX, float hitY, float hitZ,
+											int meta, EntityLivingBase placer) {
 		return getStateFromMeta(placer.getHorizontalFacing().getOpposite().ordinal());
 	}
 
 	@Override
-	public IPartSlot getSlotForPlacement(World world, BlockPos pos, IBlockState state, EnumFacing facing, float hitX, float hitY, float hitZ, EntityLivingBase placer) {
+	public IPartSlot getSlotForPlacement(World world, BlockPos pos, IBlockState state,
+										 EnumFacing facing, float hitX, float hitY,
+										 float hitZ, EntityLivingBase placer) {
 		return EnumFaceSlot.fromFace(placer.getHorizontalFacing().getOpposite());
 	}
-	
 }

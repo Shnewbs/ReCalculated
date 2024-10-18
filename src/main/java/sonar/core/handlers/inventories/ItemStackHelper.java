@@ -10,12 +10,15 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemStackHelper {
 
-    /**checks if two itemstacks are the same ignoring the size*/
+	/** Checks if two itemstacks are the same ignoring the size */
 	public static boolean equalStacksRegular(ItemStack stack1, ItemStack stack2) {
-		return !stack1.isEmpty() && !stack2.isEmpty() && stack1.getItem() == stack2.getItem() && stack1.getItemDamage() == stack2.getItemDamage() && ItemStack.areItemStackTagsEqual(stack1, stack2);
+		return !stack1.isEmpty() && !stack2.isEmpty()
+				&& stack1.getItem() == stack2.getItem()
+				&& stack1.getDamage() == stack2.getDamage()
+				&& ItemStack.areItemStackTagsEqual(stack1, stack2);
 	}
 
-    /** turns blocks/items into ItemStacks */
+	/** Turns blocks/items into ItemStacks */
 	public static ItemStack getOrCreateStack(Object obj) {
 		if (obj instanceof ItemStack) {
 			ItemStack stack = ((ItemStack) obj).copy();
@@ -25,22 +28,20 @@ public class ItemStackHelper {
 			return stack;
 		} else if (obj instanceof Item) {
 			return new ItemStack((Item) obj, 1);
-		} else {
-			if (!(obj instanceof Block)) {
-				throw new RuntimeException(String.format("Invalid ItemStack: %s", obj));
-			}
+		} else if (obj instanceof Block) {
 			return new ItemStack((Block) obj, 1);
 		}
+		throw new RuntimeException(String.format("Invalid ItemStack: %s", obj));
 	}
 
-    /** checks if the two input itemstacks come from the same mod */
+	/** Checks if the two input itemstacks come from the same mod */
 	public static boolean matchingModid(ItemStack target, ItemStack stack) {
-		String targetID = target.getItem().getRegistryName().getResourceDomain();
-		String stackID = stack.getItem().getRegistryName().getResourceDomain();
-        return targetID != null && !targetID.isEmpty() && !stackID.isEmpty() && targetID.equals(stackID);
+		String targetID = target.getItem().getRegistryName().getNamespace();
+		String stackID = stack.getItem().getRegistryName().getNamespace();
+		return targetID != null && !targetID.isEmpty() && !stackID.isEmpty() && targetID.equals(stackID);
 	}
 
-	/**checks if stacks have matching ore dictionary entries*/
+	/** Checks if stacks have matching ore dictionary entries */
 	public static boolean matchingOreDictID(ItemStack target, ItemStack stack) {
 		int[] stackIDs = OreDictionary.getOreIDs(stack);
 		int[] filterIDs = OreDictionary.getOreIDs(target);
@@ -54,7 +55,7 @@ public class ItemStackHelper {
 		return false;
 	}
 
-	/** gets the ItemStack to represent a block in the world*/
+	/** Gets the ItemStack to represent a block in the world */
 	public static ItemStack getBlockItem(World world, BlockPos pos) {
 		IBlockState state = world.getBlockState(pos);
 		ItemStack stack = state.getBlock().getItem(world, pos, state);

@@ -2,10 +2,8 @@ package sonar.core.client.gui;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
-
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import sonar.core.utils.Pair;
 
 public abstract class GuiGridElement<T> {
@@ -70,10 +68,10 @@ public abstract class GuiGridElement<T> {
 				if (i < finish) {
 					T selection = gridList.get(i);
 					if (selection != null) {
-						GlStateManager.pushMatrix();
-						GlStateManager.translate(this.xPos + (xPos * eWidth), this.yPos + (yPos * eHeight), 0);
+						RenderSystem.pushMatrix();
+						RenderSystem.translatef(this.xPos + (xPos * eWidth), this.yPos + (yPos * eHeight), 0);
 						renderGridElement(selection, 0, 0, i);
-						GlStateManager.popMatrix();
+						RenderSystem.popMatrix();
 					}
 				}
 				i++;
@@ -86,11 +84,9 @@ public abstract class GuiGridElement<T> {
 				renderElementToolTip(gridList.get(pos), x - gui.getGuiLeft(), y - gui.getGuiTop());
 			}
 		}
-
 	}
 
 	public @Nullable Pair<T, Integer> getElementHovered(GuiSonar gui, int x, int y) {
-		List<T> list = gridList;
 		int start = (int) (gridList.size() / gWidth * getCurrentScroll());
 		int X = (x - gui.getGuiLeft() - xPos) / eWidth;
 		int Y = (y - gui.getGuiTop() - yPos) / eHeight;
@@ -99,17 +95,18 @@ public abstract class GuiGridElement<T> {
 			if (i < gridList.size()) {
 				T e = gridList.get(i);
 				if (e != null) {
-					return new Pair(e, i);
+					return new Pair<>(e, i);
 				}
 			}
-			return new Pair(null, -1);
+			return new Pair<>(null, -1);
 		}
-		return new Pair(null, -2);
+		return new Pair<>(null, -2);
 	}
 
 	public void mouseClicked(GuiSonar gui, int x, int y, int button) {
 		Pair<T, Integer> e = getElementHovered(gui, x, y);
-		if (e.b != -2)
+		if (e.b != -2) {
 			onGridClicked(e.a, x, y, e.b, button, e.a == null);
+		}
 	}
 }

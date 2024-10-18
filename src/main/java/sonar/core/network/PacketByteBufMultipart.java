@@ -1,7 +1,6 @@
 package sonar.core.network;
 
 import io.netty.buffer.ByteBuf;
-import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -27,7 +26,7 @@ public class PacketByteBufMultipart extends PacketMultipart {
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		super.fromBytes(buf);
-		this.buf = buf.retain();
+		this.buf = buf.retain();  // Retain buffer to prevent memory leaks
 		this.packetID = buf.readInt();
 	}
 
@@ -35,7 +34,7 @@ public class PacketByteBufMultipart extends PacketMultipart {
 	public void toBytes(ByteBuf buf) {
 		super.toBytes(buf);
 		buf.writeInt(packetID);
-		tile.writePacket(buf, packetID);
+		tile.writePacket(buf, packetID);  // Write the packet data to the buffer
 	}
 
 	public static class Handler extends PacketMultipartHandler<PacketByteBufMultipart> {
@@ -46,7 +45,7 @@ public class PacketByteBufMultipart extends PacketMultipart {
 				if (part instanceof IByteBufTile) {
 					((IByteBufTile) part).readPacket(message.buf, message.packetID);
 				}
-				message.buf.release();
+				message.buf.release();  // Release buffer after processing
 			});
 
 			return null;

@@ -27,7 +27,7 @@ public enum BlockModelsCache implements IResourceManagerReloadListener {
 
     public static final IModelState DEFAULTMODELSTATE = optional -> Optional.empty();
     public static final VertexFormat DEFAULTVERTEXFORMAT = DefaultVertexFormats.BLOCK;
-    public static final Function<ResourceLocation, TextureAtlasSprite> DEFAULTTEXTUREGETTER = texture -> Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texture.toString());
+    public static final Function<ResourceLocation, TextureAtlasSprite> DEFAULTTEXTUREGETTER = texture -> Minecraft.getInstance().getTextureMap().getAtlasSprite(texture.toString());
 
     private final Map<ResourceLocation, IModel> cache = new HashMap<>();
     private final Map<ResourceLocation, IBakedModel> bakedCache = new HashMap<>();
@@ -61,8 +61,8 @@ public enum BlockModelsCache implements IResourceManagerReloadListener {
 
     public IBakedModel getOrLoadModel(ItemStack stack) {
         ResourceLocation location = stack.getItem().getRegistryName();
-        String hashCode = stack.hasTagCompound() ? String.valueOf(stack.getTagCompound().hashCode()) : "";
-        ResourceLocation key = new ResourceLocation(location.toString() + stack.getMetadata() + hashCode);
+        String hashCode = stack.hasTag() ? String.valueOf(stack.getTag().hashCode()) : "";
+        ResourceLocation key = new ResourceLocation(location.toString() + stack.getDamageValue() + hashCode);
 
         IBakedModel model = getModel(key);
         if (model == null) {

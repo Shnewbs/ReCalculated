@@ -5,12 +5,11 @@ import sonar.core.helpers.NBTHelper.SyncType;
 
 import java.util.List;
 
-@Deprecated
 public abstract class SyncPart extends DirtyPart implements ISyncPart {
 	public byte id = -1;
 	private String name;
 	private List<SyncType> types = Lists.newArrayList(SyncType.SAVE, SyncType.DEFAULT_SYNC);
-	
+
 	public SyncPart(int id) {
 		super();
 		this.id = (byte) id;
@@ -21,25 +20,19 @@ public abstract class SyncPart extends DirtyPart implements ISyncPart {
 		this.name = name;
 	}
 
-    @Override
+	@Override
 	public String getTagName() {
-		if (name == null) {
-			return String.valueOf(id);
-		} else {
-			return name;
-		}
+		return name != null ? name : String.valueOf(id);
 	}
 
-    @Override
+	@Override
 	public boolean canSync(SyncType syncType) {
-		SyncType[] array = new SyncType[types.size()];
-        return syncType.isType(types.toArray(array));
+		return types.stream().anyMatch(syncType::isType);
 	}
 
 	public SyncPart addSyncType(SyncType... add) {
-		SyncType[] array = types.toArray(new SyncType[0]);
 		for (SyncType type : add) {
-			if (!type.isType(array)) {
+			if (!types.contains(type)) {
 				types.add(type);
 			}
 		}
@@ -47,11 +40,8 @@ public abstract class SyncPart extends DirtyPart implements ISyncPart {
 	}
 
 	public SyncPart removeSyncType(SyncType... remove) {
-		SyncType[] array = types.toArray(new SyncType[0]);
 		for (SyncType type : remove) {
-			if (type.isType(array)) {
-				types.remove(type);
-			}
+			types.remove(type);
 		}
 		return this;
 	}

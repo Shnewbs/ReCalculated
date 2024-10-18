@@ -12,15 +12,14 @@ import javax.annotation.Nullable;
 public class CraftTweakerHelper {
 
     @Nullable
-    public static ISonarRecipeObject convertItemIngredient(IIngredient i){
-        if(i.getItems().size() > 0){
-            if(i instanceof IOreDictEntry){
-                IOreDictEntry oreDict = (IOreDictEntry) i;
+    public static ISonarRecipeObject convertItemIngredient(IIngredient ingredient) {
+        if (ingredient.getItems().size() > 0) {
+            if (ingredient instanceof IOreDictEntry) {
+                IOreDictEntry oreDict = (IOreDictEntry) ingredient;
                 return new RecipeOreStack(oreDict.getName(), oreDict.getAmount());
             }
-            return new RecipeItemStack(CraftTweakerMC.getItemStack(i), false);
+            return new RecipeItemStack(CraftTweakerMC.getItemStack(ingredient), false);
         }
         return null;
     }
-
 }

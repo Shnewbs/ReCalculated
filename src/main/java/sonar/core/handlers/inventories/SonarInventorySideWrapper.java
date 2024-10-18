@@ -1,7 +1,7 @@
 package sonar.core.handlers.inventories;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import sonar.core.api.inventories.ISonarInventory;
@@ -13,22 +13,22 @@ import javax.annotation.Nullable;
 public class SonarInventorySideWrapper implements IItemHandlerModifiable {
 
     public final ISonarInventory inventory;
-    public final EnumFacing face;
+    public final Direction face;
 
-    public static NonNullList<IItemHandlerModifiable> initWrappers(ISonarInventory inventory){
+    public static NonNullList<IItemHandlerModifiable> initWrappers(ISonarInventory inventory) {
         NonNullList<IItemHandlerModifiable> list = NonNullList.create();
-        for(EnumFacing face : EnumFacing.values()){
+        for (Direction face : Direction.values()) {
             list.add(face.ordinal(), new SonarInventorySideWrapper(inventory, face));
         }
         list.add(6, new SonarInventorySideWrapper(inventory, null));
         return list;
     }
 
-    public static IItemHandlerModifiable getHandlerForSide(NonNullList<IItemHandlerModifiable> list, EnumFacing face){
-        return list.get(face==null ? 6 : face.ordinal());
+    public static IItemHandlerModifiable getHandlerForSide(NonNullList<IItemHandlerModifiable> list, Direction face) {
+        return list.get(face == null ? 6 : face.ordinal());
     }
 
-    public SonarInventorySideWrapper(ISonarInventory inventory, @Nullable EnumFacing face){
+    public SonarInventorySideWrapper(ISonarInventory inventory, @Nullable Direction face) {
         this.inventory = inventory;
         this.face = face;
     }
@@ -52,7 +52,7 @@ public class SonarInventorySideWrapper implements IItemHandlerModifiable {
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if(inventory.checkInsert(slot, stack, face, EnumFilterType.EXTERNAL)){
+        if (inventory.checkInsert(slot, stack, face, EnumFilterType.EXTERNAL)) {
             return inventory.insertItem(slot, stack, simulate);
         }
         return stack;
@@ -61,7 +61,7 @@ public class SonarInventorySideWrapper implements IItemHandlerModifiable {
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if(inventory.checkExtract(slot, amount, face, EnumFilterType.EXTERNAL)){
+        if (inventory.checkExtract(slot, amount, face, EnumFilterType.EXTERNAL)) {
             return inventory.extractItem(slot, amount, simulate);
         }
         return ItemStack.EMPTY;
@@ -71,5 +71,4 @@ public class SonarInventorySideWrapper implements IItemHandlerModifiable {
     public int getSlotLimit(int slot) {
         return inventory.getSlotLimit(slot);
     }
-
 }

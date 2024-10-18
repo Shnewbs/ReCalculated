@@ -11,11 +11,11 @@ public class ListHelper {
 		}
 		return false;
 	}
+
 	public static <T> boolean addWithCheck(Collection<T> list, T[] toAdd) {
 		boolean wasAdded = false;
 		for (T t : toAdd) {
-			if (t != null && !list.contains(t)) {
-				list.add(t);				
+			if (addWithCheck(list, t)) {
 				wasAdded = true;
 			}
 		}
@@ -25,15 +25,14 @@ public class ListHelper {
 	public static <T> boolean addWithCheck(Collection<T> list, Collection<T> toAdd) {
 		boolean wasAdded = false;
 		for (T t : toAdd) {
-			if (t != null && !list.contains(t)) {
-				list.add(t);
-				wasAdded=true;
+			if (addWithCheck(list, t)) {
+				wasAdded = true;
 			}
 		}
 		return wasAdded;
 	}
 
-	public static int[] getOrdinals(Enum[] enums) {
+	public static int[] getOrdinals(Enum<?>[] enums) {
 		int[] listTypes = new int[enums.length];
 		for (int e = 0; e < listTypes.length; e++) {
 			listTypes[e] = enums[e].ordinal();

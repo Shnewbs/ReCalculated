@@ -9,19 +9,19 @@ import sonar.core.helpers.NBTHelper;
 import sonar.core.helpers.NBTHelper.SyncType;
 
 /**
- * for use when the type of object stored is subject to change, this can only be used with primitives
+ * For use when the type of object stored is subject to change; this can only be used with primitives.
  */
 public class SyncUnidentifiedObject extends SyncPart {
 
-    public Object obj;
-    public ObjectType objType;
+	public Object obj;
+	public ObjectType objType;
 
 	public SyncUnidentifiedObject(int id) {
 		super(id);
 	}
 
 	public void set(Object obj, ObjectType objectType) {
-		if (obj != null && (!obj.equals(this.obj))) {
+		if (obj != null && !obj.equals(this.obj)) {
 			this.obj = obj;
 			this.objType = objectType;
 			this.markChanged();

@@ -11,25 +11,30 @@ import sonar.core.handlers.inventories.handling.EnumFilterType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**make sure you still add the inventories to the synclist!*/
+/**
+ * Interface for TileEntities that handle inventories, supporting synchronization, sided inventory, and interaction filters.
+ */
 public interface ISonarInventoryTile extends IInventory, ISidedInventory {
 
+	/**
+	 * @return The Sonar inventory implementation.
+	 */
 	ISonarInventory inv();
 
-	//default List<ItemStack> slots() { return inv().slots(); }
-
-	default void onInventoryContentsChanged(int slot){}
-
-	@Nullable
-	default Boolean checkExtract(int slot, int amount, @Nullable EnumFacing face, EnumFilterType type){ return null; }
+	/**
+	 * Called when the inventory contents change.
+	 */
+	default void onInventoryContentsChanged(int slot) {}
 
 	@Nullable
-	default Boolean checkInsert(int slot, @Nonnull ItemStack stack, @Nullable EnumFacing face, EnumFilterType type){ return null; }
+	default Boolean checkExtract(int slot, int amount, @Nullable EnumFacing face, EnumFilterType type) { return null; }
 
-	default boolean checkDrop(int slot, @Nonnull ItemStack stack){ return true; }
+	@Nullable
+	default Boolean checkInsert(int slot, @Nonnull ItemStack stack, @Nullable EnumFacing face, EnumFilterType type) { return null; }
+
+	default boolean checkDrop(int slot, @Nonnull ItemStack stack) { return true; }
 
 	//// IInventory \\\\
-
 
 	default int getSizeInventory() {
 		return inv().getWrapperInventory().getSizeInventory();
@@ -40,17 +45,17 @@ public interface ISonarInventoryTile extends IInventory, ISidedInventory {
 	}
 
 	@Nonnull
-    default ItemStack getStackInSlot(int index) {
+	default ItemStack getStackInSlot(int index) {
 		return inv().getWrapperInventory().getStackInSlot(index);
 	}
 
 	@Nonnull
-    default ItemStack decrStackSize(int index, int count) {
+	default ItemStack decrStackSize(int index, int count) {
 		return inv().getWrapperInventory().decrStackSize(index, count);
 	}
 
 	@Nonnull
-    default ItemStack removeStackFromSlot(int index) {
+	default ItemStack removeStackFromSlot(int index) {
 		return inv().getWrapperInventory().removeStackFromSlot(index);
 	}
 
@@ -98,31 +103,31 @@ public interface ISonarInventoryTile extends IInventory, ISidedInventory {
 		inv().getWrapperInventory().clear();
 	}
 
-    @Nonnull
-    default String getName(){
-    	return inv().getWrapperInventory().getName();
-    }
+	@Nonnull
+	default String getName() {
+		return inv().getWrapperInventory().getName();
+	}
 
-    default boolean hasCustomName(){
-    	return inv().getWrapperInventory().hasCustomName();
-    }
+	default boolean hasCustomName() {
+		return inv().getWrapperInventory().hasCustomName();
+	}
 
-    @Nonnull
-    default ITextComponent getDisplayName(){
-    	return inv().getWrapperInventory().getDisplayName();
-    }
+	@Nonnull
+	default ITextComponent getDisplayName() {
+		return inv().getWrapperInventory().getDisplayName();
+	}
 
-    //// ISidedInventory \\\\
+	//// ISidedInventory \\\\
 
-	default int[] getSlotsForFace(EnumFacing side){
+	default int[] getSlotsForFace(EnumFacing side) {
 		return inv().getDefaultSlots();
 	}
 
-	default boolean canInsertItem(int index, ItemStack stack, EnumFacing direction){
+	default boolean canInsertItem(int index, ItemStack stack, EnumFacing direction) {
 		return inv().getItemHandler(direction).insertItem(index, stack.copy(), true).getCount() != stack.getCount();
 	}
 
-	default boolean canExtractItem(int index, ItemStack stack, EnumFacing direction){
+	default boolean canExtractItem(int index, ItemStack stack, EnumFacing direction) {
 		return inv().getItemHandler(direction).extractItem(index, stack.getCount(), true).getCount() != stack.getCount();
 	}
 }

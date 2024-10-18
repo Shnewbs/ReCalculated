@@ -10,7 +10,7 @@ public class EnergyStorageWrapper implements IEnergyHandler {
     public EnumEnergyWrapperType wrapperType;
     public EnergyType type;
 
-    public EnergyStorageWrapper(IEnergyStorage storage, EnumEnergyWrapperType wrapperType, EnergyType type){
+    public EnergyStorageWrapper(IEnergyStorage storage, EnumEnergyWrapperType wrapperType, EnergyType type) {
         this.storage = storage;
         this.wrapperType = wrapperType;
         this.type = type;
@@ -48,12 +48,12 @@ public class EnergyStorageWrapper implements IEnergyHandler {
 
     @Override
     public long addEnergy(long add, ActionType actionType) {
-        return storage.receiveEnergy((int)Math.min(Integer.MAX_VALUE, add), actionType.shouldSimulate());
+        return storage.receiveEnergy((int) Math.min(Integer.MAX_VALUE, add), actionType.shouldSimulate());
     }
 
     @Override
     public long removeEnergy(long remove, ActionType actionType) {
-        return storage.extractEnergy((int)Math.min(Integer.MAX_VALUE, remove), actionType.shouldSimulate());
+        return storage.extractEnergy((int) Math.min(Integer.MAX_VALUE, remove), actionType.shouldSimulate());
     }
 
     @Override

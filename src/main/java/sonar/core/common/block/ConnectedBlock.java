@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 
 public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlock {
 
-    public int target;
+	public int target;
 	public static final PropertyBool NORTH = PropertyBool.create("north");
 	public static final PropertyBool EAST = PropertyBool.create("east");
 	public static final PropertyBool SOUTH = PropertyBool.create("south");
@@ -37,8 +37,8 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 		IBlockState state = world.getBlockState(new BlockPos(x, y, z));
 		IBlockState block = world.getBlockState(new BlockPos(x + side.getFrontOffsetX(), y + side.getFrontOffsetY(), z + side.getFrontOffsetZ()));
 		int meta = state.getBlock().getMetaFromState(state);
-        return type(state, block, meta, block.getBlock().getMetaFromState(block));
-    }
+		return type(state, block, meta, block.getBlock().getMetaFromState(block));
+	}
 
 	public static boolean type(IBlockState state1, IBlockState state2, int m1, int m2) {
 		Block block1 = state1.getBlock();
@@ -50,9 +50,9 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 
 				if (block2 instanceof IConnectedBlock) {
 					int[] connections2 = ((IConnectedBlock) block2).getConnections();
-                    for (int aConnections1 : connections1) {
-                        for (int aConnections2 : connections2) {
-                            if (aConnections1 == aConnections2)
+					for (int aConnections1 : connections1) {
+						for (int aConnections2 : connections2) {
+							if (aConnections1 == aConnections2)
 								return true;
 						}
 					}
@@ -62,13 +62,13 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 		return false;
 	}
 
-    @Override
+	@Override
 	public int getMetaFromState(IBlockState state) {
 		return 0;
 	}
 
-    @Nonnull
-    @Override
+	@Nonnull
+	@Override
 	public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess w, BlockPos pos) {
 		int x = pos.getX();
 		int y = pos.getY();
@@ -76,10 +76,10 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 		return state.withProperty(NORTH, checkBlockInDirection(w, x, y, z, EnumFacing.NORTH)).withProperty(SOUTH, checkBlockInDirection(w, x, y, z, EnumFacing.SOUTH)).withProperty(WEST, checkBlockInDirection(w, x, y, z, EnumFacing.WEST)).withProperty(EAST, checkBlockInDirection(w, x, y, z, EnumFacing.EAST)).withProperty(UP, checkBlockInDirection(w, x, y, z, EnumFacing.UP)).withProperty(DOWN, checkBlockInDirection(w, x, y, z, EnumFacing.DOWN));
 	}
 
-    @Nonnull
-    @Override
+	@Nonnull
+	@Override
 	protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, DOWN, UP);
+		return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, DOWN, UP);
 	}
 
 	@Override
@@ -93,19 +93,19 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 			super(material, target);
 		}
 
-        @Nonnull
-        @Override
+		@Nonnull
+		@Override
 		public BlockRenderLayer getBlockLayer() {
 			return BlockRenderLayer.TRANSLUCENT;
 		}
 
 		@Nonnull
-        @Override
+		@Override
 		public EnumBlockRenderType getRenderType(IBlockState state) {
 			return EnumBlockRenderType.MODEL;
 		}
 
-        @Override
+		@Override
 		public boolean isFullCube(IBlockState state) {
 			return false;
 		}
@@ -115,12 +115,12 @@ public class ConnectedBlock extends Block implements IConnectedBlock, IStableBlo
 			return false;
 		}
 
-        @Override
+		@Override
 		@SideOnly(Side.CLIENT)
 		public boolean shouldSideBeRendered(IBlockState blockState, @Nonnull IBlockAccess blockAccess, @Nonnull BlockPos pos, EnumFacing side) {
 			IBlockState iblockstate = blockAccess.getBlockState(pos.offset(side));
 			Block block = iblockstate.getBlock();
-            return block != this && super.shouldSideBeRendered(blockState, blockAccess, pos, side);
+			return block != this && super.shouldSideBeRendered(blockState, blockAccess, pos, side);
 		}
 	}
 }

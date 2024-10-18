@@ -27,5 +27,4 @@ public interface IEnergyHandler {
     long getStored();
 
     long getCapacity();
-
 }

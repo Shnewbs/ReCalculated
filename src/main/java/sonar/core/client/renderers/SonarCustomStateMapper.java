@@ -17,9 +17,9 @@ import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.client.registry.ClientRegistry;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
@@ -29,36 +29,32 @@ public class SonarCustomStateMapper extends StateMapperBase implements ICustomMo
 	public final Map<ResourceLocation, BlockRenderer<? extends TileEntity>> customModels;
 
 	public SonarCustomStateMapper() {
-        this.renderers = new ArrayList<>();
-        this.customModels = new HashMap<>();
+		this.renderers = new ArrayList<>();
+		this.customModels = new HashMap<>();
 		ModelLoaderRegistry.registerLoader(this);
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public void registerCustomBlockRenderer(ISonarCustomRenderer renderer) {
 		Block block = renderer.getBlock();
 		BlockRenderer instance = new BlockRenderer<>(renderer);
 		ModelResourceLocation blockModel = renderer.getBlockModelResourceLocation();
 
-		//if (renderer.hasStaticRendering()) {
-			ModelLoader.setCustomStateMapper(block, this);
-			customModels.put(blockModel, instance);
-		//}
+		ModelLoader.setCustomStateMapper(block, this);
+		customModels.put(blockModel, instance);
 
-		//TileEntity tile = renderer.getTileEntity();
 		if (renderer instanceof ISonarTileRenderer) {
-			ClientRegistry.bindTileEntitySpecialRenderer(((ISonarTileRenderer) renderer).getTileEntity(), instance);
+			ClientRegistry.bindTileEntityRenderer(((ISonarTileRenderer) renderer).getTileEntity(), instance);
 		}
 		if (renderer.doInventoryRendering()) {
-            ModelResourceLocation itemModel = new ModelResourceLocation(blockModel.getResourceDomain() + ':' + blockModel.getResourcePath(), "inventories");
-			//customModels.put(itemModel, instance);
-			ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(block), renderer);
+			ModelResourceLocation itemModel = new ModelResourceLocation(blockModel.getNamespace() + ':' + blockModel.getPath(), "inventory");
+			ModelLoader.setCustomMeshDefinition(Item.BY_BLOCK.get(block), renderer);
 		}
 		renderers.add(renderer);
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	protected ModelResourceLocation getModelResourceLocation(@Nonnull IBlockState state) {
 		Block block = state.getBlock();
 		if (block instanceof ISonarRendererProvider) {
@@ -73,7 +69,7 @@ public class SonarCustomStateMapper extends StateMapperBase implements ICustomMo
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public IModel loadModel(@Nonnull ResourceLocation loc) {
 		return customModels.get(loc);
 	}
@@ -84,7 +80,7 @@ public class SonarCustomStateMapper extends StateMapperBase implements ICustomMo
 	}
 
 	@Override
-	public Set<String> getResourceDomains() {
+	public Set<String> getResourceNamespaces() {
 		return null;
 	}
 

@@ -1,6 +1,6 @@
 package sonar.core.client.gui;
 
-import net.minecraft.inventory.Container;
+import net.minecraft.inventory.container.Container;
 import sonar.core.utils.IWorldPosition;
 
 public abstract class GuiSonarTile extends GuiSonar {
@@ -9,8 +9,6 @@ public abstract class GuiSonarTile extends GuiSonar {
 
 	public GuiSonarTile(Container container, IWorldPosition entity) {
 		super(container);
-		if (entity != null) {
-			this.entity = entity;
-		}
+		this.entity = entity;
 	}
 }

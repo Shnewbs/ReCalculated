@@ -53,18 +53,17 @@ public class SonarMultipartHelper {
 		}
 		return world;
 	}
-	
+
 	public static Object getTile(World world, BlockPos pos) {
 		if (SonarLoader.mcmultipartLoaded) {
 			Optional<IMultipartContainer> container = MultipartHelper.getContainer(world, pos);
 			if (container.isPresent()) {
-				return container;
+				return container.get();
 			}
 		}
 		return world.getTileEntity(pos);
 	}
 
-	/* public static IMultipart getPartFromHash(int hashCode, World world, BlockPos pos) { Object object = getTile(world, pos); if (SonarLoader.mcmultipartLoaded && object instanceof IMultipartContainer) { return getPartFromHash(hashCode, (IMultipartContainer) object); } return null; } public static IMultipart getPartFromHash(int hashCode, IMultipartContainer container) { for (IMultipart part : container.getParts()) { if (part != null && container.getPartID(part).hashCode() == hashCode) { return part; } } return null; } public static IMultipart getPart(UUID partUUID, World world, BlockPos pos) { Object object = getTile(world, pos); if (SonarLoader.mcmultipartLoaded && object instanceof IMultipartContainer) { IMultipartContainer container = (IMultipartContainer) object; IMultipart part = container.getPartFromID(partUUID); if (part != null) { return (IMultipart) part; } } return (IMultipart) null; } */
 	public static boolean sendMultipartSyncToPlayer(TileSonarMultipart part, EntityPlayerMP player) {
 		if (part != null && part.getWorld() != null && !part.getWorld().isRemote) {
 			NBTTagCompound tag = part.writeData(new NBTTagCompound(), SyncType.SYNC_OVERRIDE);

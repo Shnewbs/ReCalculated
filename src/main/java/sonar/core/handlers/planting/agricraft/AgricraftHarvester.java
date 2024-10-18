@@ -29,7 +29,7 @@ public class AgricraftHarvester implements ISonarHarvester {
     @Override
     public boolean doHarvest(NonNullList<ItemStack> drops, World world, BlockPos pos, IBlockState state, int fortune, boolean keepBlock) {
         IAgriCrop agriCrop = SonarHelper.getTile(world, pos, IAgriCrop.class);
-        if(agriCrop != null) {
+        if (agriCrop != null) {
             MethodResult result = agriCrop.onHarvest(drops::add, null);
             return result == MethodResult.SUCCESS;
         }

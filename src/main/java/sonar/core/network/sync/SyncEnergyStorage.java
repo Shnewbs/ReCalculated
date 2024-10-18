@@ -1,8 +1,8 @@
 package sonar.core.network.sync;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
+import net.minecraft.util.Direction; // Updated to use Direction
 import net.minecraftforge.common.util.INBTSerializable;
 import sonar.core.api.energy.ISonarEnergyStorage;
 import sonar.core.api.utils.ActionType;
@@ -11,7 +11,7 @@ import sonar.core.helpers.NBTHelper.SyncType;
 
 import javax.annotation.Nullable;
 
-public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage, INBTSerializable<NBTTagCompound>, ISyncPart {
+public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage, INBTSerializable<CompoundNBT>, ISyncPart {
 
 	private long energy;
 	private long capacity;
@@ -35,16 +35,16 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 		this.maxExtract = maxExtract;
 	}
 
-	public InternalEnergyStorageWrapper getOrCreateWrapper(@Nullable EnumFacing face){
+	public InternalEnergyStorageWrapper getOrCreateWrapper(@Nullable Direction face) {
 		int id = face == null ? 6 : face.getIndex();
-		if(wrappers[id] != null){
+		if (wrappers[id] != null) {
 			return wrappers[id];
-		}else{
+		} else {
 			return wrappers[id] = new InternalEnergyStorageWrapper(this, face);
 		}
 	}
 
-	public InternalEnergyStorageWrapper getInternalWrapper(){
+	public InternalEnergyStorageWrapper getInternalWrapper() {
 		return getOrCreateWrapper(null);
 	}
 
@@ -122,7 +122,7 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 		}
 	}
 
-	public SyncEnergyStorage readFromNBT(NBTTagCompound nbt) {
+	public SyncEnergyStorage readFromNBT(CompoundNBT nbt) { // Updated to use CompoundNBT
 		this.energy = nbt.getLong("Energy");
 
 		if (energy > capacity) {
@@ -131,30 +131,30 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 		return this;
 	}
 
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+	public CompoundNBT writeToNBT(CompoundNBT nbt) { // Updated to use CompoundNBT
 		if (energy < 0) {
 			energy = 0;
 		}
-		nbt.setLong("Energy", energy);
+		nbt.putLong("Energy", energy); // Updated to use putLong
 		return nbt;
 	}
 
-    @Override
-	public final NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
-		NBTTagCompound energyTag = new NBTTagCompound();
+	@Override
+	public final CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		CompoundNBT energyTag = new CompoundNBT(); // Updated to use CompoundNBT
 		this.writeToNBT(energyTag);
-		nbt.setTag(getTagName(), energyTag);
+		nbt.put(getTagName(), energyTag); // Updated to use put
 		return nbt;
 	}
 
-    @Override
-	public final void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(getTagName())) {
-			this.readFromNBT(nbt.getCompoundTag(getTagName()));
+	@Override
+	public final void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		if (nbt.contains(getTagName())) { // Updated to use contains
+			this.readFromNBT(nbt.getCompound(getTagName())); // Updated to use getCompound
 		}
 	}
 
-    @Override
+	@Override
 	public String getTagName() {
 		return tagName;
 	}
@@ -170,8 +170,8 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 	}
 
 	///// * SONAR *//////
-    @Override
-	public long addEnergy(long maxReceive, EnumFacing face, ActionType action) {
+	@Override
+	public long addEnergy(long maxReceive, Direction face, ActionType action) { // Updated to use Direction
 		long add = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));
 
 		if (!action.shouldSimulate()) {
@@ -181,8 +181,8 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 		return add;
 	}
 
-    @Override
-	public long removeEnergy(long maxExtract, EnumFacing face, ActionType action) {
+	@Override
+	public long removeEnergy(long maxExtract, Direction face, ActionType action) { // Updated to use Direction
 		long energyExtracted = Math.min(energy, Math.min(this.maxExtract, maxExtract));
 
 		if (!action.shouldSimulate()) {
@@ -192,31 +192,31 @@ public class SyncEnergyStorage extends DirtyPart implements ISonarEnergyStorage,
 		return energyExtracted;
 	}
 
-	public boolean canExtract(EnumFacing face) {
+	public boolean canExtract(Direction face) { // Updated to use Direction
 		return true;
 	}
 
-	public boolean canReceive(EnumFacing face) {
+	public boolean canReceive(Direction face) { // Updated to use Direction
 		return true;
 	}
 
-    @Override
+	@Override
 	public long getEnergyLevel() {
 		return energy;
 	}
 
-    @Override
+	@Override
 	public long getFullCapacity() {
 		return capacity;
 	}
 
 	@Override
-	public NBTTagCompound serializeNBT() {
-		return this.writeToNBT(new NBTTagCompound());
+	public CompoundNBT serializeNBT() { // Updated to use CompoundNBT
+		return this.writeToNBT(new CompoundNBT()); // Updated to use CompoundNBT
 	}
 
 	@Override
-	public void deserializeNBT(NBTTagCompound nbt) {
+	public void deserializeNBT(CompoundNBT nbt) { // Updated to use CompoundNBT
 		this.readData(nbt, SyncType.SAVE);
 	}
 }

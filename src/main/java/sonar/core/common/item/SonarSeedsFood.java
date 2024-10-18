@@ -1,98 +1,87 @@
 package sonar.core.common.item;
 
-import java.util.List;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemFood;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.common.EnumPlantType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraftforge.common.PlantType;
 import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import sonar.core.helpers.FontHelper;
 import sonar.core.integration.SonarLoader;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
-public class SonarSeedsFood extends ItemFood implements IPlantable {
+public class SonarSeedsFood extends Item implements IPlantable {
 	private Block cropBlock;
-	private Block soilId;
+	private Block soilBlock;
 	public int greenhouseTier;
 
-	public SonarSeedsFood(int hunger, float saturation, Block crop, Block soil, int tier) {
-		super(hunger, saturation, false);
-		this.cropBlock = crop;
-		this.soilId = soil;
+	public SonarSeedsFood(int hunger, float saturation, Block cropBlock, Block soilBlock, int tier, Item.Properties properties) {
+		super(properties.food((new FoodProperties.Builder()).nutrition(hunger).saturationMod(saturation).build()));
+		this.cropBlock = cropBlock;
+		this.soilBlock = soilBlock;
 		this.greenhouseTier = tier;
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag par4) {
-        super.addInformation(stack, world, list, par4);
-
+	@OnlyIn(Dist.CLIENT)
+	public void appendHoverText(ItemStack stack, Level world, List<String> tooltip, TooltipFlag flag) {
+		super.appendHoverText(stack, world, tooltip, flag);
 		if (SonarLoader.calculatorLoaded()) {
-			String mode = FontHelper.translate("calculator.tools.calculator.greenhouse");
 			switch (greenhouseTier) {
-			case 0:
-				break;
-			case 1:
-				list.add(FontHelper.translate("Planted with Basic Greenhouse or Higher"));
-				break;
-			case 2:
-				list.add(FontHelper.translate("Planted with Advanced Greenhouse or Higher"));
-				break;
-			case 3:
-				list.add(FontHelper.translate("Planted with Flawless Greenhouse"));
-				break;
+				case 1:
+					tooltip.add(FontHelper.translate("Planted with Basic Greenhouse or Higher"));
+					break;
+				case 2:
+					tooltip.add(FontHelper.translate("Planted with Advanced Greenhouse or Higher"));
+					break;
+				case 3:
+					tooltip.add(FontHelper.translate("Planted with Flawless Greenhouse"));
+					break;
 			}
 		}
 	}
 
 	@Nonnull
-    @Override
-	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-		ItemStack stack = player.getHeldItem(hand);
+	@Override
+	public InteractionResult useOn(Player player, Level world, BlockPos pos, InteractionHand hand, float hitX, float hitY, float hitZ) {
+		ItemStack stack = player.getItemInHand(hand);
 		if (this.greenhouseTier == 0 || !SonarLoader.calculatorLoaded()) {
-			if (side != EnumFacing.UP) {
-				return EnumActionResult.PASS;
-			} else if (player.canPlayerEdit(pos, side, stack) && player.canPlayerEdit(pos.offset(EnumFacing.UP), side, stack)) {
-				IBlockState state = world.getBlockState(pos);
-				if (state.getBlock().canSustainPlant(state, world, pos, EnumFacing.UP, this) && world.isAirBlock(pos.offset(EnumFacing.UP))) {
-					world.setBlockState(pos.offset(side), cropBlock.getDefaultState());
+			if (hand == InteractionHand.MAIN_HAND && player.mayUseItemAt(pos, player.getDirection(), stack) && player.mayUseItemAt(pos.above(), player.getDirection(), stack)) {
+				BlockState state = world.getBlockState(pos);
+				if (state.canSustainPlant(world, pos, player.getDirection(), this) && world.isEmptyBlock(pos.above())) {
+					world.setBlock(pos.above(), cropBlock.defaultBlockState(), 3);
 					stack.shrink(1);
-					return EnumActionResult.SUCCESS;
-				} else {
-					return EnumActionResult.PASS;
+					return InteractionResult.SUCCESS;
 				}
-			} else {
-				return EnumActionResult.PASS;
 			}
 		}
-		return EnumActionResult.PASS;
+		return InteractionResult.PASS;
 	}
 
-    @Override
-	public EnumPlantType getPlantType(IBlockAccess world, BlockPos pos) {
-		return cropBlock == Blocks.NETHER_WART ? EnumPlantType.Nether : EnumPlantType.Crop;
+	@Override
+	public PlantType getPlantType(BlockGetter world, BlockPos pos) {
+		return cropBlock == net.minecraft.world.level.block.Blocks.NETHER_WART ? PlantType.NETHER : PlantType.CROP;
 	}
 
-    @Override
-	public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
-		return cropBlock.getDefaultState();
+	@Override
+	public BlockState getPlant(BlockGetter world, BlockPos pos) {
+		return cropBlock.defaultBlockState();
 	}
 
 	public boolean canTierUse(int tier) {
-        return tier >= this.greenhouseTier;
+		return tier >= this.greenhouseTier;
 	}
 }

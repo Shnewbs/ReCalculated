@@ -33,8 +33,8 @@ public class SonarItem extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag par4) {
-        super.addInformation(stack, world, list, par4);
+	public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag par4) {
+		super.addInformation(stack, world, list, par4);
 		if (isNew)
 			list.add(TextFormatting.YELLOW + "" + TextFormatting.ITALIC + "New Feature!");
 	}

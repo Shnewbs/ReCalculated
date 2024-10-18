@@ -17,21 +17,23 @@ import sonar.core.api.utils.ActionType;
 public class AE2Helper {
 
 	public static IAEItemStack convertStoredItemStack(StoredItemStack stack) {
-		return AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createStack(stack.item).setStackSize(stack.stored);
+		return AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class)
+				.createStack(stack.item).setStackSize(stack.stored);
 	}
 
 	public static IAEFluidStack convertStoredFluidStack(StoredFluidStack stack) {
-		return AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class).createStack(stack.fluid).setStackSize(stack.stored);
+		return AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class)
+				.createStack(stack.fluid).setStackSize(stack.stored);
 	}
 
 	public static IMEMonitor<IAEItemStack> getItemChannel(IStorageMonitorable storage) {
-		return storage.getInventory(Api.INSTANCE.storage().getStorageChannel(IItemStorageChannel.class));		
+		return storage.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
 	}
 
 	public static IMEMonitor<IAEFluidStack> getFluidChannel(IStorageMonitorable storage) {
-		return storage.getInventory(Api.INSTANCE.storage().getStorageChannel(IFluidStorageChannel.class));		
+		return storage.getInventory(AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
 	}
-	
+
 	public static StoredItemStack convertAEItemStack(IAEStack stack) {
 		if (stack != null && stack.isItem()) {
 			IAEItemStack item = (IAEItemStack) stack;
@@ -49,20 +51,10 @@ public class AE2Helper {
 	}
 
 	public static Actionable getActionable(ActionType action) {
-		switch (action) {
-		case PERFORM:
-			return Actionable.MODULATE;
-		default:
-			return Actionable.SIMULATE;
-		}
+		return action == ActionType.PERFORM ? Actionable.MODULATE : Actionable.SIMULATE;
 	}
 
 	public static ActionType getActionType(Actionable action) {
-		switch (action) {
-		case MODULATE:
-			return ActionType.PERFORM;
-		default:
-			return ActionType.SIMULATE;
-		}
+		return action == Actionable.MODULATE ? ActionType.PERFORM : ActionType.SIMULATE;
 	}
 }

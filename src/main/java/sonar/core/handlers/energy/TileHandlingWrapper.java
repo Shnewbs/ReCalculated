@@ -1,22 +1,22 @@
 package sonar.core.handlers.energy;
 
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.energy.ITileEnergyHandler;
 import sonar.core.api.utils.ActionType;
 
 public class TileHandlingWrapper implements IEnergyHandler {
 
-    public TileEntity tile;
-    public EnumFacing face;
+    public BlockEntity tile;
+    public Direction face;
     public ITileEnergyHandler handler;
     public boolean canAdd;
     public boolean canRemove;
     public boolean canRead;
     public EnergyType type;
 
-    public TileHandlingWrapper(TileEntity tile, EnumFacing face, ITileEnergyHandler handler){
+    public TileHandlingWrapper(BlockEntity tile, Direction face, ITileEnergyHandler handler) {
         this.tile = tile;
         this.face = face;
         this.handler = handler;
@@ -32,17 +32,17 @@ public class TileHandlingWrapper implements IEnergyHandler {
     }
 
     @Override
-    public EnergyType getEnergyType(){
+    public EnergyType getEnergyType() {
         return type;
     }
 
     @Override
-    public boolean canAddEnergy(){
+    public boolean canAddEnergy() {
         return canAdd;
     }
 
     @Override
-    public boolean canRemoveEnergy(){
+    public boolean canRemoveEnergy() {
         return canRemove;
     }
 
@@ -57,12 +57,12 @@ public class TileHandlingWrapper implements IEnergyHandler {
     }
 
     @Override
-    public long addEnergy(long add, ActionType actionType){
+    public long addEnergy(long add, ActionType actionType) {
         return handler.addEnergy(add, tile, face, actionType);
     }
 
     @Override
-    public long removeEnergy(long remove, ActionType actionType){
+    public long removeEnergy(long remove, ActionType actionType) {
         return handler.removeEnergy(remove, tile, face, actionType);
     }
 

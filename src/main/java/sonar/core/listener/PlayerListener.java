@@ -17,15 +17,16 @@ public class PlayerListener implements ISonarListener {
 
     @Override
     public boolean isValid() {
-        return !player.isDead;// TODO
+        return player != null && !player.isDead; // Check if player is not null and alive
     }
 
+    @Override
     public int hashCode() {
         return player.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof PlayerListener && player.equals(((PlayerListener) obj).player);
     }
-
 }

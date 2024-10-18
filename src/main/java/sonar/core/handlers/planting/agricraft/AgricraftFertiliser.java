@@ -22,7 +22,7 @@ public class AgricraftFertiliser implements ISonarFertiliser {
     @Override
     public boolean canFertilise(World world, BlockPos pos, IBlockState state) {
         IAgriCrop agriCrop = SonarHelper.getTile(world, pos, IAgriCrop.class);
-        if(agriCrop != null){
+        if (agriCrop != null) {
             Optional<IAgriFertilizer> agriFertilizer = AgriApi.getFertilizerRegistry().valueOf(new ItemStack(Items.DYE, 1, 15));
             return agriFertilizer.isPresent() && agriCrop.acceptsFertilizer(agriFertilizer.get());
         }
@@ -39,7 +39,7 @@ public class AgricraftFertiliser implements ISonarFertiliser {
     public boolean grow(World world, BlockPos pos, IBlockState state) {
         IAgriCrop agriCrop = SonarHelper.getTile(world, pos, IAgriCrop.class);
         Optional<IAgriFertilizer> agriFertilizer = AgriApi.getFertilizerRegistry().valueOf(new ItemStack(Items.DYE, 1, 15));
-        if(agriCrop != null && agriFertilizer.isPresent()){
+        if (agriCrop != null && agriFertilizer.isPresent()) {
             MethodResult result = agriCrop.onApplyFertilizer(agriFertilizer.get(), SonarCore.rand);
             return result == MethodResult.SUCCESS;
         }

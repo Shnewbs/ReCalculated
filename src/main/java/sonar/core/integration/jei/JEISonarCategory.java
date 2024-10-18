@@ -8,9 +8,9 @@ import mezz.jei.api.recipe.IRecipeWrapper;
 
 import javax.annotation.Nonnull;
 
-public abstract class JEISonarCategory implements IRecipeCategory {
+public abstract class JEISonarCategory implements IRecipeCategory<IRecipeWrapper> {
 
-    public final JEISonarProvider handler;
+    protected final JEISonarProvider handler;
 
     public JEISonarCategory(IGuiHelper guiHelper, JEISonarProvider handler) {
         this.handler = handler;
@@ -35,7 +35,7 @@ public abstract class JEISonarCategory implements IRecipeCategory {
     }
 
     @Override
-    public void setRecipe(IRecipeLayout recipeLayout, IRecipeWrapper recipeWrapper, IIngredients ingredients){
+    public void setRecipe(IRecipeLayout recipeLayout, IRecipeWrapper recipeWrapper, IIngredients ingredients) {
         recipeWrapper.getIngredients(ingredients);
     }
 }

@@ -1,9 +1,12 @@
 package sonar.core.api;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import sonar.core.api.nbt.INBTSyncable;
 import sonar.core.helpers.NBTHelper.SyncType;
 
+/**
+ * Class representing the storage size for items, energy, or fluids.
+ */
 public class StorageSize implements INBTSyncable {
 
 	public static final StorageSize EMPTY = new StorageSize(0, 0);
@@ -37,15 +40,15 @@ public class StorageSize implements INBTSyncable {
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
+	public void readData(CompoundNBT nbt, SyncType type) {
 		stored = nbt.getLong("stored");
 		max = nbt.getLong("max");
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
-		nbt.setLong("stored", stored);
-		nbt.setLong("max", max);
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) {
+		nbt.putLong("stored", stored);
+		nbt.putLong("max", max);
 		return nbt;
 	}
 }

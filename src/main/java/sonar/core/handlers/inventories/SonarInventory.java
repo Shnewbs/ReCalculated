@@ -3,9 +3,8 @@ package sonar.core.handlers.inventories;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import sonar.core.api.inventories.ISonarInventory;
@@ -28,37 +27,37 @@ import java.util.Map;
 
 public class SonarInventory extends ItemStackHandler implements ISonarInventory, ISyncPart {
 
-    private NonNullList<IItemHandlerModifiable> sided_handlers = SonarInventorySideWrapper.initWrappers(this);
-    private Map<IInsertFilter, EnumFilterType> insert_filters = new HashMap<>();
-    private Map<IExtractFilter, EnumFilterType> extract_filters = new HashMap<>();
-    public boolean default_external_insert_result = false;
-    public boolean default_external_extract_result = false;
-    public boolean default_internal_insert_result = true;
-    public boolean default_internal_extract_result = true;
+    private NonNullList<IItemHandlerModifiable> sidedHandlers = SonarInventorySideWrapper.initWrappers(this);
+    private Map<IInsertFilter, EnumFilterType> insertFilters = new HashMap<>();
+    private Map<IExtractFilter, EnumFilterType> extractFilters = new HashMap<>();
+    public boolean defaultExternalInsertResult = false;
+    public boolean defaultExternalExtractResult = false;
+    public boolean defaultInternalInsertResult = true;
+    public boolean defaultInternalExtractResult = true;
 
-    protected IInventory wrapped_inv = null;
+    protected IInventory wrappedInv = null;
     private int[] defaultSlots = null;
     public int slotLimit = 64;
 
-    public SonarInventory(int size){
+    public SonarInventory(int size) {
         stacks = NonNullList.withSize(size, ItemStack.EMPTY);
     }
 
     @Override
     public IInventory getWrapperInventory() {
-        return wrapped_inv == null ? wrapped_inv = new IInventoryWrapper(this) : wrapped_inv;
+        return wrappedInv == null ? wrappedInv = new IInventoryWrapper(this) : wrappedInv;
     }
 
     @Override
-    public IItemHandlerModifiable getItemHandler(EnumFacing side) {
-        return SonarInventorySideWrapper.getHandlerForSide(sided_handlers, side);
+    public IItemHandlerModifiable getItemHandler(Direction side) {
+        return SonarInventorySideWrapper.getHandlerForSide(sidedHandlers, side);
     }
 
     @Override
-    public int[] getDefaultSlots(){
-        if(defaultSlots == null){
+    public int[] getDefaultSlots() {
+        if (defaultSlots == null) {
             defaultSlots = new int[getSlots()];
-            for(int i =0; i< defaultSlots.length; i++){
+            for (int i = 0; i < defaultSlots.length; i++) {
                 defaultSlots[i] = i;
             }
         }
@@ -70,24 +69,24 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     }
 
     @Override
-    public int getSlotLimit(int slot){
+    public int getSlotLimit(int slot) {
         return slotLimit;
     }
 
     @Override
-    public Map<IInsertFilter, EnumFilterType> getInsertFilters(){
-        return insert_filters;
+    public Map<IInsertFilter, EnumFilterType> getInsertFilters() {
+        return insertFilters;
     }
 
     @Override
-    public Map<IExtractFilter, EnumFilterType> getExtractFilters(){
-        return extract_filters;
+    public Map<IExtractFilter, EnumFilterType> getExtractFilters() {
+        return extractFilters;
     }
 
     //// READ / WRITE \\\\
 
     @Override
-    public void readData(NBTTagCompound nbt, NBTHelper.SyncType type) {
+    public void readData(CompoundNBT nbt, NBTHelper.SyncType type) {
         if (canSync(type)) {
             this.stacks = NonNullList.withSize(this.getSlots(), ItemStack.EMPTY);
             ItemStackHelper.loadAllItems(nbt, this.stacks);
@@ -95,7 +94,7 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     }
 
     @Override
-    public NBTTagCompound writeData(NBTTagCompound nbt, NBTHelper.SyncType type) {
+    public CompoundNBT writeData(CompoundNBT nbt, NBTHelper.SyncType type) {
         if (canSync(type)) {
             ItemStackHelper.saveAllItems(nbt, this.stacks);
         }
@@ -103,28 +102,28 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     }
 
     @Override
-    public boolean checkInsert(int slot, @Nonnull ItemStack stack, @Nullable EnumFacing face, EnumFilterType internal){
-        boolean insert = internal.matches(EnumFilterType.INTERNAL) ? default_internal_insert_result : default_external_insert_result;
+    public boolean checkInsert(int slot, @Nonnull ItemStack stack, @Nullable Direction face, EnumFilterType internal) {
+        boolean insert = internal.matches(EnumFilterType.INTERNAL) ? defaultInternalInsertResult : defaultExternalInsertResult;
         return SlotHelper.checkInsert(slot, stack, face, internal, this, insert);
     }
 
     @Override
-    public boolean checkExtract(int slot, int count, @Nullable EnumFacing face, EnumFilterType internal){
-        boolean extract = internal.matches(EnumFilterType.INTERNAL) ? default_internal_extract_result : default_external_extract_result;
+    public boolean checkExtract(int slot, int count, @Nullable Direction face, EnumFilterType internal) {
+        boolean extract = internal.matches(EnumFilterType.INTERNAL) ? defaultInternalExtractResult : defaultExternalExtractResult;
         return SlotHelper.checkExtract(slot, count, face, internal, this, extract);
     }
 
     @Override
-    public boolean checkDrop(int slot, @Nonnull ItemStack stack){
+    public boolean checkDrop(int slot, @Nonnull ItemStack stack) {
         return true;
     }
 
     @Override
     public List<ItemStack> getDrops() {
         List<ItemStack> toDrop = new ArrayList<>();
-        for(int i = 0; i < stacks.size(); i ++){
+        for (int i = 0; i < stacks.size(); i++) {
             ItemStack drop = stacks.get(i);
-            if(!drop.isEmpty() && checkDrop(i, drop)){
+            if (!drop.isEmpty() && checkDrop(i, drop)) {
                 toDrop.add(drop);
             }
         }
@@ -134,7 +133,7 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if(checkInsert(slot, stack, null, EnumFilterType.INTERNAL)) {
+        if (checkInsert(slot, stack, null, EnumFilterType.INTERNAL)) {
             return super.insertItem(slot, stack, simulate);
         }
         return stack;
@@ -143,7 +142,7 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if(checkExtract(slot, amount, null, EnumFilterType.INTERNAL)) {
+        if (checkExtract(slot, amount, null, EnumFilterType.INTERNAL)) {
             return super.extractItem(slot, amount, simulate);
         }
         return ItemStack.EMPTY;
@@ -165,8 +164,9 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     }
 
     public void markChanged() {
-        if (listener != null)
+        if (listener != null) {
             listener.markChanged(this);
+        }
     }
 
     @Override
@@ -182,5 +182,4 @@ public class SonarInventory extends ItemStackHandler implements ISonarInventory,
     public NBTHelper.SyncType[] getSyncTypes() {
         return new NBTHelper.SyncType[] { NBTHelper.SyncType.SAVE };
     }
-
 }

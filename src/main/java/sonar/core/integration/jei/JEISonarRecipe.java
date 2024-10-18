@@ -10,12 +10,12 @@ import sonar.core.recipes.RecipeHelperV2;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public abstract class JEISonarRecipe<T extends JEISonarRecipe> implements IRecipeWrapper {
+public abstract class JEISonarRecipe<T extends JEISonarRecipe<T>> implements IRecipeWrapper {
 
-	public RecipeHelperV2 helper;
-	public ISonarRecipe recipe;
-	public List<List<ItemStack>> inputs;
-	public List<ItemStack> outputs;
+	protected final RecipeHelperV2 helper;
+	protected final ISonarRecipe recipe;
+	protected final List<List<ItemStack>> inputs;
+	protected final List<ItemStack> outputs;
 
 	public JEISonarRecipe(RecipeHelperV2 helper, ISonarRecipe recipe) {
 		this.helper = helper;

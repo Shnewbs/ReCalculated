@@ -1,9 +1,9 @@
 package sonar.core.api.blocks;
 
 /**
- * used to check if the block is Stable Stone or Equivalent
+ * Interface used to check if a block is a Stable Stone or its equivalent.
+ * This could be expanded based on stability-related properties.
  */
-public interface IStableBlock {	
-	
-}
+public interface IStableBlock {
 
+}

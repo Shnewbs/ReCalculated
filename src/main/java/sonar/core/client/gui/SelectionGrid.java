@@ -1,9 +1,9 @@
 package sonar.core.client.gui;
 
 public class SelectionGrid<T> extends GuiGridElement<T> {
-	public IGridGui selectGrid;
+	public IGridGui<T> selectGrid;
 
-	public SelectionGrid(IGridGui selectGrid, int gridID, int yPos, int xPos, int eWidth, int eHeight, int gWidth, int gHeight) {
+	public SelectionGrid(IGridGui<T> selectGrid, int gridID, int yPos, int xPos, int eWidth, int eHeight, int gWidth, int gHeight) {
 		super(gridID, yPos, xPos, eWidth, eHeight, gWidth, gHeight);
 		this.selectGrid = selectGrid;
 	}
@@ -35,5 +35,4 @@ public class SelectionGrid<T> extends GuiGridElement<T> {
 	public void postRender() {
 		selectGrid.postRender(gridID);
 	}
-
 }

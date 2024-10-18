@@ -1,13 +1,15 @@
 package sonar.core.common.tile;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.TickableBlockEntity;
 import sonar.core.api.nbt.INBTSyncable;
 import sonar.core.helpers.NBTHelper;
 import sonar.core.sync.ISonarValue;
@@ -16,7 +18,7 @@ import sonar.core.sync.ValueWatcher;
 
 import javax.annotation.Nonnull;
 
-public class TileEntitySaveable extends TileEntity implements ITickable, INBTSyncable {
+public class TileEntitySaveable extends BlockEntity implements TickableBlockEntity, INBTSyncable {
 
     public final ValueWatcher value_watcher = new ValueWatcher(new IValueWatcher() {
         @Override
@@ -25,75 +27,81 @@ public class TileEntitySaveable extends TileEntity implements ITickable, INBTSyn
         }
     });
 
-    public void onValuesChanged(){}
+    public TileEntitySaveable(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
 
-    /**world may be null*/
-    public void onInternalValueChanged(ISonarValue value){}
+    public void onValuesChanged() {}
+
+    /** Level may be null */
+    public void onInternalValueChanged(ISonarValue value) {}
 
     @Override
-    public void update(){
-        if(value_watcher.isDirty()){
+    public void tick() {
+        if (value_watcher.isDirty()) {
             onValuesChanged();
             value_watcher.forEachSyncable(s -> s.setDirty(false));
             value_watcher.setDirty(false);
-            if(!world.isRemote)
-                markDirty();
+            if (!level.isClientSide)
+                setChanged();
         }
     }
 
     @Override
-    public final void readFromNBT(NBTTagCompound compound){
-        super.readFromNBT(compound);
-        readData(compound, NBTHelper.SyncType.SAVE);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        readData(tag, NBTHelper.SyncType.SAVE);
     }
 
     @Override
-    public final NBTTagCompound writeToNBT(NBTTagCompound compound){
-        super.writeToNBT(compound);
-        writeData(compound, NBTHelper.SyncType.SAVE);
-        return compound;
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        writeData(tag, NBTHelper.SyncType.SAVE);
     }
 
     @Override
-    public void readData(NBTTagCompound nbt, NBTHelper.SyncType type) {
-        value_watcher.forEachSyncable(v -> { if(v.canLoadFrom(nbt)) v.load(nbt); });
+    public void readData(CompoundTag nbt, NBTHelper.SyncType type) {
+        value_watcher.forEachSyncable(v -> {
+            if (v.canLoadFrom(nbt)) v.load(nbt);
+        });
     }
 
     @Override
-    public NBTTagCompound writeData(NBTTagCompound nbt, NBTHelper.SyncType type) {
+    public CompoundTag writeData(CompoundTag nbt, NBTHelper.SyncType type) {
         value_watcher.forEachSyncable(v -> v.save(nbt));
         return nbt;
     }
 
     @Override
-    public final SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound tag = writeToNBT(new NBTTagCompound());
-        return new SPacketUpdateTileEntity(pos, 0, tag);
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
-        readFromNBT(packet.getNbtCompound());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        load(pkt.getTag());
     }
 
-    public NBTHelper.SyncType getUpdateTagType(){
+    public NBTHelper.SyncType getUpdateTagType() {
         return NBTHelper.SyncType.SYNC_OVERRIDE;
     }
 
     @Nonnull
     @Override
-    public NBTTagCompound getUpdateTag() {
+    public CompoundTag getUpdateTag() {
         return writeData(super.getUpdateTag(), getUpdateTagType());
     }
 
     @Override
-    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
+    public void handleUpdateTag(CompoundTag tag) {
         super.handleUpdateTag(tag);
         readData(tag, getUpdateTagType());
     }
 
     @Override
-    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+    public boolean shouldRefresh(Level level, BlockPos pos, BlockState oldState, BlockState newState) {
         return oldState.getBlock() != newState.getBlock();
     }
 }

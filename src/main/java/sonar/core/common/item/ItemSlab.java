@@ -33,20 +33,20 @@ public class ItemSlab extends ItemBlock {
 		this.setHasSubtypes(true);
 	}
 
-    /** Converts the given ItemStack damage value into a metadata value to be placed in the world when this Item is placed as a Block (mostly used with ItemBlocks). */
-    @Override
+	/** Converts the given ItemStack damage value into a metadata value to be placed in the world when this Item is placed as a Block (mostly used with ItemBlocks). */
+	@Override
 	public int getMetadata(int damage) {
 		return damage;
 	}
 
-    /** Returns the unlocalized name of this item. This version accepts an ItemStack so different stacks can have different names based on their damage or NBT. */
-    @Nonnull
-    @Override
+	/** Returns the unlocalized name of this item. This version accepts an ItemStack so different stacks can have different names based on their damage or NBT. */
+	@Nonnull
+	@Override
 	public String getUnlocalizedName(ItemStack stack) {
 		return this.singleSlab.getUnlocalizedName(stack.getMetadata());
 	}
 
-    /** Called when a Block is right-clicked with this Item */
+	/** Called when a Block is right-clicked with this Item */
 	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (stack.getCount() != 0 && playerIn.canPlayerEdit(pos.offset(facing), facing, stack)) {
 			Comparable<?> comparable = this.singleSlab.getTypeForItem(stack);
@@ -55,7 +55,7 @@ public class ItemSlab extends ItemBlock {
 			if (iblockstate.getBlock() == this.singleSlab) {
 				IProperty<?> iproperty = this.singleSlab.getVariantProperty();
 				Comparable<?> comparable1 = iblockstate.getValue(iproperty);
-                BlockSlab.EnumBlockHalf blockslab$enumblockhalf = iblockstate.getValue(BlockSlab.HALF);
+				BlockSlab.EnumBlockHalf blockslab$enumblockhalf = iblockstate.getValue(BlockSlab.HALF);
 
 				if ((facing == EnumFacing.UP && blockslab$enumblockhalf == BlockSlab.EnumBlockHalf.BOTTOM || facing == EnumFacing.DOWN && blockslab$enumblockhalf == BlockSlab.EnumBlockHalf.TOP) && comparable1 == comparable) {
 					IBlockState iblockstate1 = this.makeState(iproperty, comparable1);
@@ -77,7 +77,7 @@ public class ItemSlab extends ItemBlock {
 		}
 	}
 
-    @Override
+	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean canPlaceBlockOnSide(World worldIn, @Nonnull BlockPos pos, @Nonnull EnumFacing side, EntityPlayer player, ItemStack stack) {
 		BlockPos blockpos = pos;
@@ -95,7 +95,7 @@ public class ItemSlab extends ItemBlock {
 
 		pos = pos.offset(side);
 		IBlockState iblockstate1 = worldIn.getBlockState(pos);
-        return iblockstate1.getBlock() == this.singleSlab && comparable == iblockstate1.getValue(iproperty) || super.canPlaceBlockOnSide(worldIn, blockpos, side, player, stack);
+		return iblockstate1.getBlock() == this.singleSlab && comparable == iblockstate1.getValue(iproperty) || super.canPlaceBlockOnSide(worldIn, blockpos, side, player, stack);
 	}
 
 	private boolean tryPlace(EntityPlayer player, ItemStack stack, World worldIn, BlockPos pos, Object itemSlabType) {

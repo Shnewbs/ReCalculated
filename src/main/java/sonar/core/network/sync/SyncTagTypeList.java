@@ -11,13 +11,12 @@ import sonar.core.helpers.NBTHelper.SyncType;
 import java.util.ArrayList;
 
 /**
- * for use with objects which implement INBTSyncable and have an Empty Constructor for instances
+ * For use with objects which implement INBTSyncable and have an Empty Constructor for instances
  */
-@Deprecated
 public class SyncTagTypeList<T> extends SyncPart {
 
-    public ArrayList<T> objs = new ArrayList<>();
-	private int nbtType = -1;	
+	public ArrayList<T> objs = new ArrayList<>();
+	private final int nbtType;
 
 	public SyncTagTypeList(int nbtType, int id) {
 		super(id);
@@ -46,8 +45,7 @@ public class SyncTagTypeList<T> extends SyncPart {
 	}
 
 	public void removeObject(T object) {
-		if (objs.contains(object)) {
-			objs.remove(object);
+		if (objs.remove(object)) {
 			markChanged();
 		}
 	}
@@ -65,37 +63,38 @@ public class SyncTagTypeList<T> extends SyncPart {
 	@Override
 	public void readData(NBTTagCompound nbt, SyncType type) {
 		if (nbt.hasKey(getTagName())) {
-            ArrayList newObjs = new ArrayList<>();
 			NBTTagList tagList = nbt.getTagList(getTagName(), Constants.NBT.TAG_COMPOUND);
-			for (int i = 0; i < tagList.tagCount(); i++) {	
+			ArrayList<T> newObjs = new ArrayList<>();
+			for (int i = 0; i < tagList.tagCount(); i++) {
 				NBTTagCompound tag = tagList.getCompoundTagAt(i);
-                newObjs.add(NBTHelper.readNBTBase(tag, nbtType, getTagName()));
+				newObjs.add(NBTHelper.readNBTBase(tag, nbtType, getTagName()));
 			}
 			objs = newObjs;
-        } else if (nbt.getBoolean(getTagName() + 'E')) {
-            objs = new ArrayList<>();
+		} else if (nbt.getBoolean(getTagName() + 'E')) {
+			objs = new ArrayList<>();
 		}
 	}
 
 	@Override
 	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
 		NBTTagList tagList = new NBTTagList();
-		objs.forEach(obj -> {
-			if (obj != null){
+		for (T obj : objs) {
+			if (obj != null) {
 				NBTTagCompound tag = new NBTTagCompound();
 				NBTHelper.writeNBTBase(tag, nbtType, obj, getTagName());
 				tagList.appendTag(tag);
 			}
-		});
+		}
 		if (!tagList.hasNoTags()) {
 			nbt.setTag(getTagName(), tagList);
 		} else {
-            nbt.setBoolean(getTagName() + 'E', true);
+			nbt.setBoolean(getTagName() + 'E', true);
 		}
 		return nbt;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
-        return obj instanceof SyncTagTypeList && ((SyncTagTypeList) obj).getObjects().equals(this.objs);
+		return obj instanceof SyncTagTypeList && ((SyncTagTypeList<?>) obj).getObjects().equals(this.objs);
 	}
 }

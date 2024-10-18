@@ -1,10 +1,10 @@
 package sonar.core.handlers.inventories.containers;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import sonar.core.SonarCore;
 import sonar.core.api.nbt.INBTSyncable;
@@ -26,7 +26,7 @@ public class ContainerSync extends ContainerSonar {
 
 	public ContainerSync(TileEntitySonar tile) {
 		if (tile instanceof INBTSyncable) {
-            sync = tile;
+			sync = tile;
 		}
 		this.tile = tile;
 	}
@@ -39,8 +39,8 @@ public class ContainerSync extends ContainerSonar {
 		if (sync != null && this.listeners != null) {
 			SyncType[] types = getSyncTypes();
 			for (SyncType type : types) {
-				NBTTagCompound syncData = sync.writeData(new NBTTagCompound(), type);
-				if (!syncData.hasNoTags()) {
+				CompoundNBT syncData = sync.writeData(new CompoundNBT(), type);
+				if (!syncData.isEmpty()) {
 					sendPacketToListeners(new PacketTileSync(tile.getCoords().getBlockPos(), syncData, type));
 				}
 			}
@@ -48,20 +48,20 @@ public class ContainerSync extends ContainerSonar {
 	}
 
 	@Override
-	public void addListener(IContainerListener listener){
+	public void addListener(IContainerListener listener) {
 		super.addListener(listener);
-        if (listener instanceof EntityPlayerMP) {
-            NBTTagCompound saveData = sync.writeData(new NBTTagCompound(), SyncType.SAVE);
-            if (!saveData.hasNoTags()) {
-                SonarCore.network.sendTo(new PacketTileSync(tile.getCoords().getBlockPos(), saveData, SyncType.SAVE), (EntityPlayerMP) listener);
-            }
-        }
+		if (listener instanceof ServerPlayerEntity) {
+			CompoundNBT saveData = sync.writeData(new CompoundNBT(), SyncType.SAVE);
+			if (!saveData.isEmpty()) {
+				SonarCore.network.sendTo(new PacketTileSync(tile.getCoords().getBlockPos(), saveData, SyncType.SAVE), (ServerPlayerEntity) listener);
+			}
+		}
 	}
 
-	public final void sendPacketToListeners(IMessage packet){
+	public final void sendPacketToListeners(IMessage packet) {
 		for (IContainerListener o : listeners) {
-			if (o instanceof EntityPlayerMP) {
-				SonarCore.network.sendTo(packet, (EntityPlayerMP) o);
+			if (o instanceof ServerPlayerEntity) {
+				SonarCore.network.sendTo(packet, (ServerPlayerEntity) o);
 			}
 		}
 	}
@@ -80,7 +80,7 @@ public class ContainerSync extends ContainerSonar {
 	}
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(PlayerEntity player) {
 		return !(tile instanceof IInventory) || ((IInventory) tile).isUsableByPlayer(player);
 	}
 }

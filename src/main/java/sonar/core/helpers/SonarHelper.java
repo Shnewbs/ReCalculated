@@ -28,23 +28,23 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * helps with getting tiles, adding energy and checking stacks
+ * Helps with getting tiles, adding energy, and checking stacks.
  */
 public class SonarHelper {
 
-	private static List<EnumFacing> face_values;
+	private static List<EnumFacing> faceValues;
 
-	public static List<EnumFacing> getEnumFacingValues(){
-		return face_values == null ? face_values = convertArray(EnumFacing.VALUES) : face_values;
+	public static List<EnumFacing> getEnumFacingValues() {
+		return faceValues == null ? faceValues = convertArray(EnumFacing.VALUES) : faceValues;
 	}
 
-    public static ChunkPos getChunkFromPos(int xPos, int zPos) {
-        return new ChunkPos(xPos >> 4, zPos >> 4);
-    }
+	public static ChunkPos getChunkFromPos(int xPos, int zPos) {
+		return new ChunkPos(xPos >> 4, zPos >> 4);
+	}
 
-    public static ChunkPos getChunkPos(int xChunk, int zChunk) {
-        return new ChunkPos(xChunk, zChunk);
-    }
+	public static ChunkPos getChunkPos(int xChunk, int zChunk) {
+		return new ChunkPos(xChunk, zChunk);
+	}
 
 	public static TileEntity getAdjacentTileEntity(TileEntity tile, EnumFacing side) {
 		return tile.getWorld().getTileEntity(tile.getPos().offset(side));
@@ -54,60 +54,58 @@ public class SonarHelper {
 		return world.getBlockState(pos.offset(side)).getBlock();
 	}
 
-	public static <TILE> TILE getTile(World world, BlockPos pos, Class<TILE> type){
+	public static <TILE> TILE getTile(World world, BlockPos pos, Class<TILE> type) {
 		TileEntity tile = world.getTileEntity(pos);
-		if(tile != null && type.isAssignableFrom(tile.getClass())) {
-			return (TILE) tile;
+		if (tile != null && type.isAssignableFrom(tile.getClass())) {
+			return type.cast(tile);
 		}
 		return null;
 	}
 
-	public static <BLOCK> BLOCK getBlock(World world, BlockPos pos, Class<BLOCK> type){
+	public static <BLOCK> BLOCK getBlock(World world, BlockPos pos, Class<BLOCK> type) {
 		Block block = world.getBlockState(pos).getBlock();
-		if(type.isAssignableFrom(block.getClass())) {
-			return (BLOCK) block;
+		if (type.isAssignableFrom(block.getClass())) {
+			return type.cast(block);
 		}
 		return null;
 	}
 
-	public static Entity getEntity(Class entityClass, IWorldPosition tile, int range, boolean nearest) {
+	public static Entity getEntity(Class<? extends Entity> entityClass, IWorldPosition tile, int range, boolean nearest) {
 		BlockCoords coords = tile.getCoords();
-
-		AxisAlignedBB aabb = new AxisAlignedBB(coords.getX() - range, coords.getY() - range, coords.getZ() - range, coords.getX() + range, coords.getY() + range, coords.getZ() + range);
+		AxisAlignedBB aabb = new AxisAlignedBB(coords.getX() - range, coords.getY() - range, coords.getZ() - range,
+				coords.getX() + range, coords.getY() + range, coords.getZ() + range);
 
 		List<Entity> entities = coords.getWorld().getEntitiesWithinAABB(entityClass, aabb);
-		Entity entity = null;
-		double entityDis = nearest ? Double.MAX_VALUE : 0;
-        for (Entity target : entities) {
-			double d0 = coords.getX() - target.posX;
-			double d1 = coords.getY() - target.posY;
-			double d2 = coords.getZ() - target.posZ;
-			double distance = d0 * d0 + d1 * d1 + d2 * d2;
-			if (nearest ? distance < entityDis : distance > entityDis) {
-				entity = target;
-				entityDis = distance;
+		Entity closestEntity = null;
+		double entityDistance = nearest ? Double.MAX_VALUE : 0;
+
+		for (Entity target : entities) {
+			double dX = coords.getX() - target.posX;
+			double dY = coords.getY() - target.posY;
+			double dZ = coords.getZ() - target.posZ;
+			double distance = dX * dX + dY * dY + dZ * dZ;
+
+			if (nearest ? distance < entityDistance : distance > entityDistance) {
+				closestEntity = target;
+				entityDistance = distance;
 			}
 		}
-		return entity;
+		return closestEntity;
 	}
 
-	public static EntityPlayerMP getPlayerFromName(String player) {
-		List<EntityPlayerMP> server = FMLCommonHandler.instance().getMinecraftServerInstance().getServer().getPlayerList().getPlayers();
-		for (EntityPlayerMP entityPlayer : server) {
-			if (entityPlayer.getName().equals(player)) {
-				return entityPlayer;
+	public static EntityPlayerMP getPlayerFromName(String playerName) {
+		List<EntityPlayerMP> serverPlayers = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers();
+		for (EntityPlayerMP player : serverPlayers) {
+			if (player.getName().equals(playerName)) {
+				return player;
 			}
 		}
 		return null;
 	}
 
-	public static EntityPlayer getPlayerFromUUID(UUID player) {
-		EntityPlayer fromUUID = null;
-		Entity entity = FMLCommonHandler.instance().getMinecraftServerInstance().getEntityFromUuid(player);
-		if (entity instanceof EntityPlayer) {
-			fromUUID = (EntityPlayer) entity;
-		}
-		return fromUUID;
+	public static EntityPlayer getPlayerFromUUID(UUID playerUUID) {
+		Entity entity = FMLCommonHandler.instance().getMinecraftServerInstance().getEntityFromUuid(playerUUID);
+		return entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
 	}
 
 	public static GameProfile getProfileByUUID(UUID playerUUID) {
@@ -131,34 +129,23 @@ public class SonarHelper {
 
 	public static int getAngleFromMeta(int meta) {
 		switch (meta) {
-		case 2:
-			return 180;
-		case 3:
-			return 0;
-		case 4:
-			return 90;
-		case 5:
-			return 270;
+			case 2: return 180;
+			case 3: return 0;
+			case 4: return 90;
+			case 5: return 270;
+			default: return 0;
 		}
-		return 0;
 	}
 
 	public static int invertMetadata(int meta) {
 		switch (meta) {
-		case 0:
-			return 0;
-		case 1:
-			return 5;
-		case 2:
-			return 4;
-		case 3:
-			return 3;
-		case 4:
-			return 2;
-		case 5:
-			return 1;
-		default:
-			return -1;
+			case 0: return 0;
+			case 1: return 5;
+			case 2: return 4;
+			case 3: return 3;
+			case 4: return 2;
+			case 5: return 1;
+			default: return -1;
 		}
 	}
 
@@ -172,79 +159,64 @@ public class SonarHelper {
 
 	public static int getRenderRotation(EnumFacing face) {
 		switch (face) {
-		case SOUTH:
-			return 180;
-		case WEST:
-			return 270;
-		case EAST:
-			return 90;
-		default:
-			return 0;
+			case SOUTH: return 180;
+			case WEST: return 270;
+			case EAST: return 90;
+			default: return 0;
 		}
 	}
 
 	public static EnumFacing getHorizontal(EnumFacing dir) {
-		if (dir == EnumFacing.NORTH) {
-			return EnumFacing.EAST;
+		switch (dir) {
+			case NORTH: return EnumFacing.EAST;
+			case EAST: return EnumFacing.SOUTH;
+			case SOUTH: return EnumFacing.WEST;
+			case WEST: return EnumFacing.NORTH;
+			default: return dir; //DEFAULT
 		}
-		if (dir == EnumFacing.EAST) {
-			return EnumFacing.SOUTH;
-		}
-		if (dir == EnumFacing.SOUTH) {
-			return EnumFacing.WEST;
-		}
-		if (dir == EnumFacing.WEST) {
-			return EnumFacing.NORTH;
-		}
-		return dir; //DEFAULT
 	}
 
-	public static ArrayList<BlockCoords> getConnectedBlocks(Block block, List<EnumFacing> dirs, World w, BlockPos pos, int max) {
-        ArrayList<BlockCoords> handlers = new ArrayList<>();
-		addCoords(block, w, pos, max, handlers, dirs);
+	public static ArrayList<BlockCoords> getConnectedBlocks(Block block, List<EnumFacing> directions, World world, BlockPos pos, int max) {
+		ArrayList<BlockCoords> handlers = new ArrayList<>();
+		addCoords(block, world, pos, max, handlers, directions);
 		return handlers;
 	}
 
-	public static void addCoords(Block block, World w, BlockPos pos, int max, ArrayList<BlockCoords> handlers, List<EnumFacing> dirs) {
-		for (EnumFacing side : dirs) {
+	public static void addCoords(Block block, World world, BlockPos pos, int max, ArrayList<BlockCoords> handlers, List<EnumFacing> directions) {
+		for (EnumFacing side : directions) {
 			if (handlers.size() > max) {
 				return;
 			}
 			BlockPos current = pos.offset(side);
-			IBlockState state = w.getBlockState(current);
-            Block tile = w.getBlockState(current).getBlock();
+			IBlockState state = world.getBlockState(current);
+			Block tile = state.getBlock();
 			if (tile == block) {
 				BlockCoords coords = new BlockCoords(current);
 				if (!handlers.contains(coords)) {
 					handlers.add(coords);
-                    addCoords(block, w, current, max, handlers, SonarHelper.convertArray(EnumFacing.values()));
+					addCoords(block, world, current, max, handlers, SonarHelper.convertArray(EnumFacing.values()));
 				}
 			}
 		}
 	}
 
-	public static <E extends Enum> E incrementEnum(E enumObj, E[] values) {
+	public static <E extends Enum<E>> E incrementEnum(E enumObj, E[] values) {
 		int ordinal = enumObj.ordinal() + 1;
-		if (ordinal < values.length) {
-			return values[ordinal];
-		} else {
-			return values[0];
-		}
+		return ordinal < values.length ? values[ordinal] : values[0];
 	}
 
-	public static <T> List<T> convertArray(T[] objs) {
-        List<T> inputs = new ArrayList<>();
-        Collections.addAll(inputs, objs);
-		return inputs;
+	public static <T> List<T> convertArray(T[] array) {
+		List<T> list = new ArrayList<>();
+		Collections.addAll(list, array);
+		return list;
 	}
 
-	public static <T> T[] convertArray(List<T> objs) {
-		return (T[]) objs.toArray();
+	public static <T> T[] convertArray(List<T> list) {
+		return (T[]) list.toArray();
 	}
 
-
-	public static boolean intContains(int[] ints, int num) {
-		for (int i : ints) {
+	public static boolean intContains(int[] array, int num) {
+		for (int i : array) {
 			if (i == num) {
 				return true;
 			}
@@ -252,53 +224,53 @@ public class SonarHelper {
 		return false;
 	}
 
-	public static <T> boolean arrayContains(T[] ints, T num) {
-		for (T i : ints) {
-			if (i == num) {
+	public static <T> boolean arrayContains(T[] array, T num) {
+		for (T item : array) {
+			if (item.equals(num)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public static int compareWithDirection(long stored1, long stored2, SortingDirection dir) {
-		if (stored1 < stored2)
-			return dir == SortingDirection.DOWN ? 1 : -1;
-		if (stored1 == stored2)
+	public static int compareWithDirection(long value1, long value2, SortingDirection direction) {
+		if (value1 < value2) {
+			return direction == SortingDirection.DOWN ? 1 : -1;
+		} else if (value1 == value2) {
 			return 0;
-		return dir == SortingDirection.DOWN ? -1 : 1;
-	}
-
-	public static int compareStringsWithDirection(String string1, String string2, SortingDirection dir) {
-		int res = String.CASE_INSENSITIVE_ORDER.compare(string1, string2);
-		if (res == 0) {
-			res = string1.compareTo(string2);
 		}
-		return dir == SortingDirection.DOWN ? res : -res;
+		return direction == SortingDirection.DOWN ? -1 : 1;
 	}
 
-    public static List<EntityPlayerMP> getPlayersWatchingChunk(PlayerChunkMapEntry entry) {
-        if (entry != null && entry.isSentToPlayers()) {
-            try {
-                Field field = PlayerChunkMapEntry.class.getDeclaredField("players");
-                field.setAccessible(true);
-                List<EntityPlayerMP> obj = (List<EntityPlayerMP>) field.get(entry);
-                return Lists.newArrayList(obj);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-        }
-        return new ArrayList<>();
+	public static int compareStringsWithDirection(String string1, String string2, SortingDirection direction) {
+		int result = String.CASE_INSENSITIVE_ORDER.compare(string1, string2);
+		if (result == 0) {
+			result = string1.compareTo(string2);
+		}
+		return direction == SortingDirection.DOWN ? result : -result;
+	}
 
-    }
-    
-    @Nullable
-    public static EnumFacing getBlockDirection(BlockPos main, BlockPos dirPos){
-    	for(EnumFacing face : EnumFacing.VALUES){
-    		if(main.offset(face).equals(dirPos)){
-    			return face;
-    		}
-    	}
-    	return null;
-    }
+	public static List<EntityPlayerMP> getPlayersWatchingChunk(PlayerChunkMapEntry entry) {
+		if (entry != null && entry.isSentToPlayers()) {
+			try {
+				Field field = PlayerChunkMapEntry.class.getDeclaredField("players");
+				field.setAccessible(true);
+				List<EntityPlayerMP> players = (List<EntityPlayerMP>) field.get(entry);
+				return Lists.newArrayList(players);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return new ArrayList<>();
+	}
+
+	@Nullable
+	public static EnumFacing getBlockDirection(BlockPos main, BlockPos dirPos) {
+		for (EnumFacing face : EnumFacing.values()) {
+			if (main.offset(face).equals(dirPos)) {
+				return face;
+			}
+		}
+		return null;
+	}
 }

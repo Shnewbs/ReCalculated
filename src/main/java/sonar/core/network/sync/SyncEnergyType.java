@@ -1,7 +1,7 @@
 package sonar.core.network.sync;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
 import sonar.core.api.energy.EnergyType;
 import sonar.core.helpers.NBTHelper.SyncType;
 import sonar.core.helpers.SonarHelper;
@@ -23,11 +23,11 @@ public class SyncEnergyType extends SyncPart {
         return type;
     }
 
-    public void setEnergyType(EnergyType type){
-    	this.type = type;
-    	this.markChanged();
+    public void setEnergyType(EnergyType type) {
+        this.type = type;
+        this.markChanged();
     }
-    
+
     public void incrementType() {
         SonarHelper.incrementEnum(this.type, EnergyType.values());
         this.markChanged();
@@ -44,14 +44,13 @@ public class SyncEnergyType extends SyncPart {
     }
 
     @Override
-    public void readData(NBTTagCompound nbt, SyncType type) {
+    public void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
         this.type = EnergyType.readFromNBT(nbt, "energyType");
     }
 
     @Override
-    public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+    public CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
         EnergyType.writeToNBT(this.type, nbt, "energyType");
         return nbt;
     }
-
 }

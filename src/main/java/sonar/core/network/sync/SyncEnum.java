@@ -1,12 +1,12 @@
 package sonar.core.network.sync;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
 import sonar.core.helpers.NBTHelper.SyncType;
 
-public class SyncEnum<E extends Enum> extends SyncPart {
+public class SyncEnum<E extends Enum<E>> extends SyncPart {
 
-    public E[] values;
+	public E[] values;
 	public E current;
 
 	public SyncEnum(E[] values, int id) {
@@ -32,17 +32,17 @@ public class SyncEnum<E extends Enum> extends SyncPart {
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
 		if (current != null) {
-			nbt.setInteger(getTagName(), current.ordinal());
+			nbt.putInt(getTagName(), current.ordinal()); // Updated method for writing int
 		}
 		return nbt;
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(getTagName())){
-			setObject(values.clone()[nbt.getInteger(getTagName())]);
+	public void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		if (nbt.contains(getTagName())) {
+			setObject(values[nbt.getInt(getTagName())]); // Updated method for reading int
 		}
 	}
 
@@ -72,6 +72,7 @@ public class SyncEnum<E extends Enum> extends SyncPart {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return current.toString();
 	}

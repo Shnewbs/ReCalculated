@@ -98,7 +98,7 @@ public class SonarBlock extends Block implements IWrenchable {
         return wrenchable;
     }
 
-    //// ORIENTATION \\\\
+    //// ORIENTATION \\\
 
     @Override
     public int getMetaFromState(IBlockState state) {
@@ -144,7 +144,7 @@ public class SonarBlock extends Block implements IWrenchable {
         return !hasSpecialRenderer();
     }
 
-    //// DROPPING METHODS \\\\
+    //// DROPPING METHODS \\\
 
     public static final String DROP_TAG_NAME = "sonar_drop";
     public static final String DROP_TAG_LEGACY = "dropped";

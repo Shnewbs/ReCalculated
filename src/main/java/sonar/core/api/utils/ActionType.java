@@ -1,29 +1,36 @@
 package sonar.core.api.utils;
 
+/**
+ * Enum representing the type of action, either simulating or performing the intended action.
+ */
 public enum ActionType {
-	
-    /**
-     * simulates the intended action
-     */
+
+	/**
+	 * Simulates the intended action.
+	 */
 	SIMULATE,
-    /**
-     * performs the intended action
-     */
+
+	/**
+	 * Performs the intended action.
+	 */
 	PERFORM;
-	
+
+	/**
+	 * Checks if the action should simulate.
+	 *
+	 * @return True if the action is a simulation, false otherwise.
+	 */
 	public boolean shouldSimulate() {
-		switch (this) {
-		case PERFORM:
-			return false;
-		default:
-			return true;
-		}
+		return this == SIMULATE;
 	}
-	
-	public static ActionType getTypeForAction(boolean simulate){
-        if (simulate) {
-			return SIMULATE;
-		}			
-		return PERFORM;
+
+	/**
+	 * Gets the ActionType based on whether the action should simulate or not.
+	 *
+	 * @param simulate True for SIMULATE, false for PERFORM.
+	 * @return The corresponding ActionType.
+	 */
+	public static ActionType getTypeForAction(boolean simulate) {
+		return simulate ? SIMULATE : PERFORM;
 	}
 }

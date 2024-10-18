@@ -1,16 +1,19 @@
 package sonar.core.helpers;
 
+import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextFormatting;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextFormatting;
-
-/** may not be used in the end, due to making a easier styled string */
+/**
+ * May not be used in the end, due to making a easier styled string.
+ */
 public class SonarTextFormatter {
 
 	public static final String START_SELECTION_CHAR = "\uFFEF";
@@ -27,7 +30,10 @@ public class SonarTextFormatter {
 		return formatSelections(s, f -> enableSpecialFormattingForString(f, formatting));
 	}
 
-	/** enables the given special formatting for the selected string don't pass RESET or COLOUR values */
+	/**
+	 * Enables the given special formatting for the selected string.
+	 * Don't pass RESET or COLOUR values.
+	 */
 	public static String enableSpecialFormattingForString(String s, List<TextFormatting> formatting) {
 		s = removeSelectedFormatting(s, formatting);
 		s = removeAllOldResets(s);
@@ -42,7 +48,10 @@ public class SonarTextFormatter {
 		return formatSelections(s, f -> disableSpecialFormattingForString(f, formatting));
 	}
 
-	/** disables the given special formatting for the selected string don't pass RESET or COLOUR values */
+	/**
+	 * Disables the given special formatting for the selected string.
+	 * Don't pass RESET or COLOUR values.
+	 */
 	public static String disableSpecialFormattingForString(String s, List<TextFormatting> formatting) {
 		s = removeSelectedFormatting(s, formatting);
 		s = removeAllOldResets(s);
@@ -54,7 +63,11 @@ public class SonarTextFormatter {
 		return formatSelections(s, f -> setTextColourForString(f, colour));
 	}
 
-	/** sets the Text Colour for the given string don't pass RESET or SPECIAL FORMATTING values, you can pass null to remove colour formatting */
+	/**
+	 * Sets the Text Colour for the given string.
+	 * Don't pass RESET or SPECIAL FORMATTING values.
+	 * You can pass null to remove colour formatting.
+	 */
 	public static String setTextColourForString(String s, TextFormatting colour) {
 		s = removeAllColourFormatting(s);
 		s = removeAllOldResets(s);
@@ -71,7 +84,7 @@ public class SonarTextFormatter {
 
 	public static String formatBetweenPlaceHolders(String str, final String open, final String close, Function<String, String> format) {
 		str = removeAllOldResets(str);
-		if (StringUtils.isEmpty(open) || StringUtils.isEmpty(close)) {
+		if (open.isEmpty() || close.isEmpty()) {
 			return str;
 		}
 		final int strLen = str.length();
@@ -98,13 +111,10 @@ public class SonarTextFormatter {
 					list.add(str.substring(pos, strLen));
 					break;
 				}
-				// add previous without formatting
+				// Add previous without formatting
 				list.add(str.substring(pos, start));
-
-				// list.add(open); //add these back for next formatting
 				list.add(format.apply(str.substring(start, end)));
-				list.add(close); // add these back for next formatting
-
+				list.add(close); // Add these back for next formatting
 				pos = end + closeLen;
 			}
 		}
@@ -117,9 +127,7 @@ public class SonarTextFormatter {
 	}
 
 	public static String removeAllSelections(String s) {
-		String r_start = s.replaceAll(START_SELECTION_CHAR, "");
-		String r_end = r_start.replaceAll(END_SELECTION_CHAR, "");
-		return r_end;
+		return s.replaceAll(START_SELECTION_CHAR, "").replaceAll(END_SELECTION_CHAR, "");
 	}
 
 	public static String removeAllFormatting(String s) {
@@ -174,13 +182,16 @@ public class SonarTextFormatter {
 		return s;
 	}
 
-	/** removes all resets which have no formatting before them you will still need to add back the start and end reset */
+	/**
+	 * Removes all resets which have no formatting before them.
+	 * You will still need to add back the start and end reset.
+	 */
 	public static String removeAllOldResets(String s) {
 		StringBuilder newS = new StringBuilder();
 		String[] resetStrings = RESET.split(s);
 		for (String subS : resetStrings) {
 			newS.append(subS);
-			if (subS.contains(CODE_STRING)) { // if there is some formatting add a reset after
+			if (subS.contains(CODE_STRING)) { // If there is some formatting add a reset after
 				newS.append(TextFormatting.RESET.toString());
 			}
 		}
@@ -190,9 +201,9 @@ public class SonarTextFormatter {
 	public static Pattern createFormattingPattern(List<TextFormatting> format) {
 		StringBuilder s = new StringBuilder();
 		for (TextFormatting text : format) {
-			String format_code = text.toString().replace(CODE_STRING, "");
-			if (!s.toString().contains(format_code)) {
-				s.append(format_code);
+			String formatCode = text.toString().replace(CODE_STRING, "");
+			if (!s.toString().contains(formatCode)) {
+				s.append(formatCode);
 			}
 		}
 		return Pattern.compile("(?i)" + CODE_STRING + "[" + s + "]");
@@ -201,9 +212,9 @@ public class SonarTextFormatter {
 	public static String createFormattingString(List<TextFormatting> format) {
 		StringBuilder s = new StringBuilder();
 		for (TextFormatting text : format) {
-			String format_code = text.toString();
-			if (!s.toString().contains(format_code)) {
-				s.append(format_code);
+			String formatCode = text.toString();
+			if (!s.toString().contains(formatCode)) {
+				s.append(formatCode);
 			}
 		}
 		return s.toString();
@@ -225,5 +236,4 @@ public class SonarTextFormatter {
 		}
 		return nbt;
 	}
-
 }

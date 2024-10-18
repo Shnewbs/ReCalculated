@@ -9,20 +9,17 @@ public class SlotSonarFiltered extends Slot {
     public ISonarInventoryTile invTile;
 
     public SlotSonarFiltered(ISonarInventoryTile invTile, int index, int xPosition, int yPosition) {
-        super(invTile, index, xPosition, yPosition);
+        super(invTile.inv(), index, xPosition, yPosition);  // Pass inventory to the Slot constructor
         this.invTile = invTile;
     }
 
     @Override
-    public int getSlotStackLimit(){
+    public int getSlotStackLimit() {
         return invTile.inv().getSlotLimit(getSlotIndex());
     }
 
     @Override
     public boolean isItemValid(ItemStack stack) {
-        if(invTile.inv().checkInsert(this.getSlotIndex(), stack, null, EnumFilterType.INTERNAL)){
-            return super.isItemValid(stack);
-        }
-        return false;
+        return invTile.inv().checkInsert(getSlotIndex(), stack, null, EnumFilterType.INTERNAL) && super.isItemValid(stack);
     }
 }

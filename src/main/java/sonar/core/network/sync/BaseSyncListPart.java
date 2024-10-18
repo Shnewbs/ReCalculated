@@ -1,6 +1,6 @@
 package sonar.core.network.sync;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import sonar.core.api.nbt.INBTSyncable;
 import sonar.core.helpers.NBTHelper;
 import sonar.core.helpers.NBTHelper.SyncType;
@@ -13,10 +13,10 @@ public abstract class BaseSyncListPart extends DirtyPart implements ISyncableLis
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
+	public void readData(CompoundNBT nbt, SyncType type) {
 		if (shouldEmbed()) {
-			NBTTagCompound tag = nbt.getCompoundTag(((ISyncPart) this).getTagName());
-			if (!tag.hasNoTags()) {
+			CompoundNBT tag = nbt.getCompound(((ISyncPart) this).getTagName());
+			if (!tag.isEmpty()) {
 				NBTHelper.readSyncParts(tag, type, syncList);
 			}
 		} else {
@@ -25,11 +25,11 @@ public abstract class BaseSyncListPart extends DirtyPart implements ISyncableLis
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) {
 		if (shouldEmbed()) {
-			NBTTagCompound tag = NBTHelper.writeSyncParts(new NBTTagCompound(), type, syncList, type == SyncType.SYNC_OVERRIDE);
-			if (!tag.hasNoTags()) {
-				nbt.setTag(((ISyncPart) this).getTagName(), tag);
+			CompoundNBT tag = NBTHelper.writeSyncParts(new CompoundNBT(), type, syncList, type == SyncType.SYNC_OVERRIDE);
+			if (!tag.isEmpty()) {
+				nbt.put(((ISyncPart) this).getTagName(), tag);
 			}
 		} else {
 			NBTHelper.writeSyncParts(nbt, type, syncList, type.isType(SyncType.SAVE));
@@ -40,7 +40,7 @@ public abstract class BaseSyncListPart extends DirtyPart implements ISyncableLis
 	@Override
 	public void markChanged(IDirtyPart part) {
 		syncList.markSyncPartChanged(part);
-		markChanged();
+		markDirty(); // Updated to use the new method name in NeoForge
 	}
 
 	public boolean shouldEmbed() {

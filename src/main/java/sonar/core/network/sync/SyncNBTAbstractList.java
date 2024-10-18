@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT; // Updated to use CompoundNBT
+import net.minecraft.nbt.ListNBT; // Updated to use ListNBT
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.common.util.ByteBufUtils; // Updated import for ByteBufUtils
 import sonar.core.api.nbt.INBTSyncable;
 import sonar.core.helpers.NBTHelper;
 import sonar.core.helpers.NBTHelper.SyncType;
 
 /**
- * for use with objects which implement INBTSyncable and have an Empty Constructor for instances
+ * For use with objects which implement INBTSyncable and have an empty constructor for instances
  */
 public class SyncNBTAbstractList<T extends INBTSyncable> extends SyncPart {
 
-    public List<T> objs = new ArrayList<>();
+	public List<T> objs = new ArrayList<>();
 	public Class<T> type;
 
 	public SyncNBTAbstractList(Class<T> type, int id) {
@@ -28,14 +28,14 @@ public class SyncNBTAbstractList<T extends INBTSyncable> extends SyncPart {
 	public SyncNBTAbstractList(Class<T> type, int id, int capacity) {
 		super(id);
 		this.type = type;
-        objs = new ArrayList<>(capacity);
+		objs = new ArrayList<>(capacity);
 	}
 
-    public List<T> getObjects() {
+	public List<T> getObjects() {
 		return objs;
 	}
 
-    public void setObjects(List<T> list) {
+	public void setObjects(List<T> list) {
 		objs = list;
 		markChanged();
 	}
@@ -55,7 +55,7 @@ public class SyncNBTAbstractList<T extends INBTSyncable> extends SyncPart {
 
 	@Override
 	public void writeToBuf(ByteBuf buf) {
-		ByteBufUtils.writeTag(buf, writeData(new NBTTagCompound(), SyncType.SAVE));
+		ByteBufUtils.writeTag(buf, writeData(new CompoundNBT(), SyncType.SAVE)); // Updated to use CompoundNBT
 	}
 
 	@Override
@@ -64,35 +64,37 @@ public class SyncNBTAbstractList<T extends INBTSyncable> extends SyncPart {
 	}
 
 	@Override
-	public void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(getTagName())) {
-            List newObjs = new ArrayList<>();
-			NBTTagList tagList = nbt.getTagList(getTagName(), Constants.NBT.TAG_COMPOUND);
-			for (int i = 0; i < tagList.tagCount(); i++) {
-				newObjs.add(NBTHelper.instanceNBTSyncable(this.type, tagList.getCompoundTagAt(i)));
+	public void readData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		if (nbt.contains(getTagName())) { // Updated to use contains
+			List<T> newObjs = new ArrayList<>();
+			ListNBT tagList = nbt.getList(getTagName(), Constants.NBT.TAG_COMPOUND); // Updated to use ListNBT
+			for (int i = 0; i < tagList.size(); i++) {
+				newObjs.add(NBTHelper.instanceNBTSyncable(this.type, tagList.getCompound(i))); // Updated to use getCompound
 			}
 			objs = newObjs;
-        } else if (nbt.getBoolean(getTagName() + 'E')) {
-            objs = new ArrayList<>();
+		} else if (nbt.getBoolean(getTagName() + 'E')) {
+			objs = new ArrayList<>();
 		}
 	}
 
 	@Override
-	public NBTTagCompound writeData(NBTTagCompound nbt, SyncType type) {
-		NBTTagList tagList = new NBTTagList();
+	public CompoundNBT writeData(CompoundNBT nbt, SyncType type) { // Updated to use CompoundNBT
+		ListNBT tagList = new ListNBT(); // Updated to use ListNBT
 		objs.forEach(obj -> {
-			if (obj != null)
-				tagList.appendTag(obj.writeData(new NBTTagCompound(), SyncType.SAVE));
+			if (obj != null) {
+				tagList.add(obj.writeData(new CompoundNBT(), SyncType.SAVE)); // Updated to use CompoundNBT
+			}
 		});
-		if (!tagList.hasNoTags()) {
-			nbt.setTag(getTagName(), tagList);
+		if (!tagList.isEmpty()) { // Updated to use isEmpty
+			nbt.put(getTagName(), tagList); // Updated to use put
 		} else {
-            nbt.setBoolean(getTagName() + 'E', true);
+			nbt.putBoolean(getTagName() + 'E', true); // Updated to use putBoolean
 		}
 		return nbt;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
-        return obj instanceof SyncNBTAbstractList && ((SyncNBTAbstractList) obj).getObjects().equals(this.objs);
+		return obj instanceof SyncNBTAbstractList && ((SyncNBTAbstractList<?>) obj).getObjects().equals(this.objs);
 	}
 }

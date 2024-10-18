@@ -6,7 +6,9 @@ import net.minecraftforge.common.util.Constants.NBT;
 import sonar.core.helpers.NBTHelper;
 import sonar.core.helpers.NBTHelper.SyncType;
 
-@Deprecated
+/**
+ * For use with objects which implement INBTSyncable and have an Empty Constructor for instances
+ */
 public abstract class SyncTagType<T> extends SyncPart {
 
 	public static class BOOLEAN extends SyncTagType<Boolean> {
@@ -85,20 +87,20 @@ public abstract class SyncTagType<T> extends SyncPart {
 	public static class LONG extends SyncTagType<Long> {
 		public LONG(int id) {
 			super(NBT.TAG_LONG, id);
-			this.current = (long) 0;
+			this.current = 0L;
 		}
 
 		public LONG(String name) {
 			super(NBT.TAG_LONG, name);
-			this.current = (long) 0;
+			this.current = 0L;
 		}
 
-        public void increaseBy(long i) {
+		public void increaseBy(long i) {
 			setObject(getObject() + i);
 			markChanged();
 		}
 
-        public void decreaseBy(long i) {
+		public void decreaseBy(long i) {
 			setObject(getObject() - i);
 			markChanged();
 		}
@@ -107,40 +109,27 @@ public abstract class SyncTagType<T> extends SyncPart {
 	public static class FLOAT extends SyncTagType<Float> {
 		public FLOAT(int id) {
 			super(NBT.TAG_FLOAT, id);
-			this.current = (float) 0;
+			this.current = 0.0f;
 		}
 
 		public FLOAT(String name) {
 			super(NBT.TAG_FLOAT, name);
-			this.current = (float) 0;
+			this.current = 0.0f;
 		}
 	}
 
 	public static class DOUBLE extends SyncTagType<Double> {
 		public DOUBLE(int id) {
 			super(NBT.TAG_DOUBLE, id);
-			this.current = (double) 0;
+			this.current = 0.0;
 		}
 
 		public DOUBLE(String name) {
 			super(NBT.TAG_DOUBLE, name);
-			this.current = (double) 0;
+			this.current = 0.0;
 		}
 	}
-	/*
-	public static class Number<N extends Number> extends SyncTagType<N> {
-		public Number(int id) {
-			super(NBT.TAG_ANY_NUMERIC, id);
-			this.current = (double) 0;
-		}
 
-		public Number(String name) {
-			super(NBT.TAG_ANY_NUMERIC, name);
-			this.current = (double) 0;
-		}
-	}
-	*/
-	
 	public static class BYTE_ARRAY extends SyncTagType<Byte[]> {
 		public BYTE_ARRAY(int id, int size) {
 			super(NBT.TAG_BYTE_ARRAY, id);
@@ -187,10 +176,10 @@ public abstract class SyncTagType<T> extends SyncPart {
 			super(NBT.TAG_INT_ARRAY, name);
 			this.current = new Integer[size];
 		}
-	}	
+	}
 
 	public T current;
-	private int nbtType = -1;
+	private final int nbtType;
 
 	public SyncTagType(int nbtType, int id) {
 		super(id);
@@ -222,7 +211,7 @@ public abstract class SyncTagType<T> extends SyncPart {
 
 	@Override
 	public void readData(NBTTagCompound nbt, SyncType type) {
-		if (nbt.hasKey(getTagName())){
+		if (nbt.hasKey(getTagName())) {
 			setObject((T) NBTHelper.readNBTBase(nbt, nbtType, getTagName()));
 		}
 	}
@@ -243,7 +232,8 @@ public abstract class SyncTagType<T> extends SyncPart {
 		}
 	}
 
+	@Override
 	public String toString() {
-		return current.toString();
+		return current != null ? current.toString() : "null";
 	}
 }

@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 
 import javax.annotation.Nonnull;
@@ -17,7 +17,7 @@ public abstract class SonarRendererBase implements ISonarCustomRenderer {
 	public final Block block;
 	public final ModelResourceLocation location;
 	public TextureAtlasSprite icon;
-    public ArrayList<ResourceLocation> textures = new ArrayList<>();
+	public ArrayList<ResourceLocation> textures = new ArrayList<>();
 
 	public SonarRendererBase(Block block, ModelResourceLocation location) {
 		this.block = block;
@@ -35,7 +35,7 @@ public abstract class SonarRendererBase implements ISonarCustomRenderer {
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public ModelResourceLocation getModelLocation(@Nonnull ItemStack stack) {
 		return getBlockModelResourceLocation();
 	}
@@ -57,7 +57,7 @@ public abstract class SonarRendererBase implements ISonarCustomRenderer {
 
 	@Override
 	public TextureAtlasSprite getIcon() {
-		return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+		return Minecraft.getInstance().getTextureAtlas(TextureAtlasSprite.LOCATION_BLOCKS).apply(new ResourceLocation("minecraft:missingno"));
 	}
 
 	@Override
@@ -71,9 +71,10 @@ public abstract class SonarRendererBase implements ISonarCustomRenderer {
 	}
 
 	public final TextureAtlasSprite getIcon(ResourceLocation loc) {
-		if (loc == null)
+		if (loc != null) {
 			return ModelLoader.defaultTextureGetter().apply(loc);
-		else
+		} else {
 			return null;
+		}
 	}
 }

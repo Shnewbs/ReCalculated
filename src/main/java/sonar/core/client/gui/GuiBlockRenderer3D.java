@@ -2,7 +2,6 @@ package sonar.core.client.gui;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.vecmath.Vector3d;
 
@@ -11,13 +10,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.init.Blocks;
@@ -34,7 +27,7 @@ import net.minecraftforge.client.ForgeHooksClient;
 
 public class GuiBlockRenderer3D implements IBlockAccess {
 
-	protected static final Minecraft mc = Minecraft.getMinecraft();
+	protected static final Minecraft mc = Minecraft.getInstance();
 
 	public final Vector3d origin = new Vector3d();
 	public final Vector3d eye = new Vector3d();
@@ -62,8 +55,8 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 			this.tile = tile;
 		}
 	}
-	
-	public IBlockAccess world(){
+
+	public IBlockAccess world() {
 		return this;
 	}
 
@@ -89,12 +82,12 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 		GlStateManager.enableRescaleNormal();
 
 		RenderHelper.disableStandardItemLighting();
-		mc.entityRenderer.disableLightmap();
-		mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		mc.gameRenderer.disableLightmap();
+		mc.getTextureManager().bind(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
 		GlStateManager.disableLighting();
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableAlpha();
+		GlStateManager.enableTexture();
+		GlStateManager.enableAlphaTest();
 
 		Vector3d trans = new Vector3d(-origin.x + eye.x - 8 * 0.0625, -origin.y + eye.y, -origin.z + eye.z - 8 * 0.0625);
 
@@ -106,12 +99,10 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 
 		RenderHelper.enableStandardItemLighting();
 		GlStateManager.enableLighting();
-		TileEntityRendererDispatcher.instance.entityX = origin.x - eye.x;
-		TileEntityRendererDispatcher.instance.entityY = origin.y - eye.y;
-		TileEntityRendererDispatcher.instance.entityZ = origin.z - eye.z;
-		TileEntityRendererDispatcher.staticPlayerX = origin.x - eye.x;
-		TileEntityRendererDispatcher.staticPlayerY = origin.y - eye.y;
-		TileEntityRendererDispatcher.staticPlayerZ = origin.z - eye.z;
+		TileEntityRendererDispatcher.instance.xOff = origin.x - eye.x;
+		TileEntityRendererDispatcher.instance.yOff = origin.y - eye.y;
+		TileEntityRendererDispatcher.instance.zOff = origin.z - eye.z;
+
 		for (int pass = 0; pass < 2; pass++) {
 			setGlStateForPass(pass);
 			doTileEntityRenderPass(pass);
@@ -122,23 +113,24 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 	private void doTileEntityRenderPass(int pass) {
 		ForgeHooksClient.setRenderPass(pass);
 		for (GuiBlockRenderCache cache : blocks) {
-			if (cache.tile != null) {
-				if (cache.tile.shouldRenderInPass(pass)) {
-					Vector3d at = new Vector3d(eye.x, eye.y, eye.z);
-					BlockPos pos = cache.pos;
-					at.x += pos.getX() - origin.x;
-					at.y += pos.getY() - origin.y;
-					at.z += pos.getZ() - origin.z;
-					if (cache.tile.getClass() == TileEntityChest.class) {
-						TileEntityChest chest = (TileEntityChest) cache.tile;
-						at.x -= 0.5;
-						at.z -= 0.5;
-						GL11.glRotated(180, 0, 1, 0);
-					}
-					doSpecialRender(cache, at);
-					if (cache.tile.getClass() == TileEntityChest.class) {
-						GL11.glRotated(-180, 0, 1, 0);
-					}
+			if (cache.tile != null && cache.tile.shouldRenderInPass(pass)) {
+				Vector3d at = new Vector3d(eye.x, eye.y, eye.z);
+				BlockPos pos = cache.pos;
+				at.x += pos.getX() - origin.x;
+				at.y += pos.getY() - origin.y;
+				at.z += pos.getZ() - origin.z;
+
+				if (cache.tile.getClass() == TileEntityChest.class) {
+					TileEntityChest chest = (TileEntityChest) cache.tile;
+					at.x -= 0.5;
+					at.z -= 0.5;
+					GL11.glRotated(180, 0, 1, 0);
+				}
+
+				doSpecialRender(cache, at);
+
+				if (cache.tile.getClass() == TileEntityChest.class) {
+					GL11.glRotated(-180, 0, 1, 0);
 				}
 			}
 		}
@@ -149,62 +141,37 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 	}
 
 	private void doWorldRenderPass(Vector3d trans, BlockRenderLayer layer) {
-
-		BufferBuilder wr = Tessellator.getInstance().getBuffer();
+		BufferBuilder wr = Tessellator.getInstance().getBuilder();
 		wr.begin(7, DefaultVertexFormats.BLOCK);
-
-		Tessellator.getInstance().getBuffer().setTranslation(trans.x, trans.y, trans.z);
+		Tessellator.getInstance().getBuilder().setTranslation(trans.x, trans.y, trans.z);
 
 		for (GuiBlockRenderCache cache : blocks) {
 			IBlockState state = cache.state;
 			BlockPos pos = cache.pos;
 			Block block = state.getBlock();
 			if (block.canRenderInLayer(state, layer)) {
-				renderBlock(state, pos, this, Tessellator.getInstance().getBuffer());
+				renderBlock(state, pos, this, Tessellator.getInstance().getBuilder());
 			}
 		}
 
-		Tessellator.getInstance().draw();
-		Tessellator.getInstance().getBuffer().setTranslation(0, 0, 0);
+		Tessellator.getInstance().end();
+		Tessellator.getInstance().getBuilder().setTranslation(0, 0, 0);
 	}
 
 	public void renderBlock(IBlockState state, BlockPos pos, IBlockAccess blockAccess, BufferBuilder worldRendererIn) {
-
 		try {
-			BlockRendererDispatcher blockrendererdispatcher = mc.getBlockRendererDispatcher();
-			EnumBlockRenderType type = state.getRenderType();
+			BlockRendererDispatcher blockrendererdispatcher = mc.getBlockRenderer();
+			EnumBlockRenderType type = state.getRenderShape();
 			if (type != EnumBlockRenderType.MODEL) {
 				blockrendererdispatcher.renderBlock(state, pos, blockAccess, worldRendererIn);
 				return;
 			}
 
-			// We only want to change one param here, the check sides
 			IBakedModel ibakedmodel = blockrendererdispatcher.getModelForState(state);
 			state = state.getBlock().getExtendedState(state, this, pos);
-			blockrendererdispatcher.getBlockModelRenderer().renderModel(blockAccess, ibakedmodel, state, pos, worldRendererIn, false);
+			blockrendererdispatcher.getModelRenderer().tesselateBlock(blockAccess, ibakedmodel, state, pos, worldRendererIn, false);
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
-			// Just bury a render issue here, it is only the IO screen
-		}
-	}
-
-	public void renderMultipart(IBlockState state, BlockPos pos, IBlockAccess blockAccess, BufferBuilder worldRendererIn) {
-
-		try {
-			BlockRendererDispatcher blockrendererdispatcher = mc.getBlockRendererDispatcher();
-			EnumBlockRenderType type = state.getRenderType();
-			if (type != EnumBlockRenderType.MODEL) {
-				blockrendererdispatcher.renderBlock(state, pos, blockAccess, worldRendererIn);
-				return;
-			}
-
-			// We only want to change one param here, the check sides
-			IBakedModel ibakedmodel = blockrendererdispatcher.getModelForState(state);
-			// state = state.getBlock().getExtendedState(state, this, pos);
-			blockrendererdispatcher.getBlockModelRenderer().renderModel(blockAccess, ibakedmodel, state, pos, worldRendererIn, false);
-		} catch (Throwable throwable) {
-			throwable.printStackTrace();
-			// Just bury a render issue here, it is only the IO screen
 		}
 	}
 
@@ -214,9 +181,9 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 	}
 
 	private void setGlStateForPass(int layer) {
-		GlStateManager.color(1, 1, 1);
+		GlStateManager.color4f(1, 1, 1, 1);
 		if (layer == 0) {
-			GlStateManager.enableDepth();
+			GlStateManager.enableDepthTest();
 			GlStateManager.disableBlend();
 			GlStateManager.depthMask(true);
 		} else {
@@ -226,12 +193,10 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 		}
 	}
 
-	/* public void renderInGui() { BlockRendererDispatcher renderer = Minecraft.getMinecraft().getBlockRendererDispatcher(); GlStateManager.pushMatrix(); GlStateManager.rotate(33, 0,0, 1); GlStateManager.scale(64, 64, 64); Tessellator tessellator = Tessellator.getInstance(); BufferBuilder vertex = tessellator.getBuffer(); vertex.begin(7, DefaultVertexFormats.BLOCK); for (Entry<BlockPos, IBlockState> ren : blocks.entrySet()) { try { renderer.renderBlock(ren.getValue(), ren.getKey(), this, vertex); } catch (Exception e) { e.printStackTrace(); } } //tessellator.draw(); vertex.finishDrawing(); GlStateManager.popMatrix(); } */
-
 	@Override
 	public TileEntity getTileEntity(@Nonnull BlockPos pos) {
 		for (GuiBlockRenderCache cache : blocks) {
-			if (cache.pos == pos && cache.tile != null) {
+			if (cache.pos.equals(pos) && cache.tile != null) {
 				return cache.tile;
 			}
 		}
@@ -239,46 +204,46 @@ public class GuiBlockRenderer3D implements IBlockAccess {
 	}
 
 	@Override
-	public int getCombinedLight(@Nonnull BlockPos pos, int lightValue) {
+	public int getLightEmission(@Nonnull BlockPos pos, int lightValue) {
 		return 0;
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public IBlockState getBlockState(@Nonnull BlockPos pos) {
 		for (GuiBlockRenderCache cache : blocks) {
-			if (cache.pos == pos && cache.tile != null) {
+			if (cache.pos.equals(pos) && cache.tile != null) {
 				return cache.state;
 			}
 		}
-		return Blocks.AIR.getDefaultState();
+		return Blocks.AIR.defaultBlockState();
 	}
 
 	@Override
-	public boolean isAirBlock(@Nonnull BlockPos pos) {
+	public boolean isEmptyBlock(@Nonnull BlockPos pos) {
 		IBlockState state = getBlockState(pos);
 		return state == null || state.getBlock() == Blocks.AIR;
 	}
 
 	@Nonnull
-    @Override
+	@Override
 	public Biome getBiome(@Nonnull BlockPos pos) {
 		return Biome.getBiome(0);
 	}
 
 	@Override
-	public int getStrongPower(@Nonnull BlockPos pos, @Nonnull EnumFacing direction) {
+	public int getDirectSignal(@Nonnull BlockPos pos, @Nonnull EnumFacing direction) {
 		return 0;
 	}
 
 	@Nonnull
-    @Override
-	public WorldType getWorldType() {
+	@Override
+	public WorldType getLevelType() {
 		return WorldType.DEFAULT;
 	}
 
 	@Override
-	public boolean isSideSolid(@Nonnull BlockPos pos, @Nonnull EnumFacing side, boolean _default) {
+	public boolean isSolidBlockSide(@Nonnull BlockPos pos, @Nonnull EnumFacing side, boolean _default) {
 		return false;
 	}
 }

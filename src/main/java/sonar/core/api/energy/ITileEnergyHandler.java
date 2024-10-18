@@ -8,33 +8,89 @@ import sonar.core.api.utils.ActionType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**the handler Flux Networks uses to transfer energy*/
+/**
+ * Handler used by Flux Networks to manage energy transfer for tiles.
+ */
 public interface ITileEnergyHandler {
-	
+
+	/**
+	 * @return The type of energy this handler manages.
+	 */
 	EnergyType getEnergyType();
-	
-	/**if flux networks can render the block as connected*/
-    boolean canRenderConnection(@Nonnull TileEntity tile, @Nullable EnumFacing dir);
-	
-	/**if this handler can energy transfer in the given direction*/
-    boolean canAddEnergy(TileEntity tile, EnumFacing dir);
-	
-	/**if this handler can energy transfer in the given direction*/
-    boolean canRemoveEnergy(TileEntity tile, EnumFacing dir);
 
-    /**if this handler can read the energy stored*/
-    boolean canReadEnergy(TileEntity tile, EnumFacing dir);
-	
-	/**returns how much energy was added to the tile depending on the TransferType called, this will always be called after canAddEnergy*/
-    long addEnergy(long add, TileEntity tile, EnumFacing dir, ActionType actionType);
+	/**
+	 * Checks if Flux Networks can render a connection to the tile.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The side to check (nullable).
+	 * @return true if the connection can be rendered.
+	 */
+	boolean canRenderConnection(@Nonnull TileEntity tile, @Nullable EnumFacing dir);
 
-	/**returns how much energy was removed from the tile depending on the TransferType called, this will always be called after canRemoveEnergy*/
-    long removeEnergy(long remove, TileEntity tile, EnumFacing dir, ActionType actionType);
+	/**
+	 * Checks if energy can be added to the tile from a specific direction.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The direction to check.
+	 * @return true if energy can be added.
+	 */
+	boolean canAddEnergy(TileEntity tile, EnumFacing dir);
 
-	/**returns how much energy is stored in the tile*/
+	/**
+	 * Checks if energy can be removed from the tile from a specific direction.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The direction to check.
+	 * @return true if energy can be removed.
+	 */
+	boolean canRemoveEnergy(TileEntity tile, EnumFacing dir);
+
+	/**
+	 * Checks if energy can be read from the tile.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The direction to check.
+	 * @return true if energy can be read.
+	 */
+	boolean canReadEnergy(TileEntity tile, EnumFacing dir);
+
+	/**
+	 * Adds energy to the tile.
+	 *
+	 * @param add The amount of energy to add.
+	 * @param tile The tile entity.
+	 * @param dir The direction to add energy from.
+	 * @param actionType The action type (simulate or perform).
+	 * @return The amount of energy actually added.
+	 */
+	long addEnergy(long add, TileEntity tile, EnumFacing dir, ActionType actionType);
+
+	/**
+	 * Removes energy from the tile.
+	 *
+	 * @param remove The amount of energy to remove.
+	 * @param tile The tile entity.
+	 * @param dir The direction to remove energy from.
+	 * @param actionType The action type (simulate or perform).
+	 * @return The amount of energy actually removed.
+	 */
+	long removeEnergy(long remove, TileEntity tile, EnumFacing dir, ActionType actionType);
+
+	/**
+	 * Gets the current energy stored in the tile.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The direction to check.
+	 * @return The amount of energy stored.
+	 */
 	long getStored(TileEntity tile, EnumFacing dir);
 
-	/**returns the max energy stored in the tile*/
+	/**
+	 * Gets the maximum energy capacity of the tile.
+	 *
+	 * @param tile The tile entity.
+	 * @param dir The direction to check.
+	 * @return The maximum energy capacity.
+	 */
 	long getCapacity(TileEntity tile, EnumFacing dir);
-
 }

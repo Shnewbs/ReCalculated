@@ -1,7 +1,7 @@
 package sonar.core.handlers.energy.items;
 
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import sonar.core.api.energy.EnergyType;
 import sonar.core.api.utils.ActionType;
@@ -18,38 +18,36 @@ public class ItemHandlerForge implements IItemEnergyHandler {
 
     @Override
     public boolean canAddEnergy(ItemStack stack) {
-        return !stack.isEmpty() && stack.hasCapability(CapabilityEnergy.ENERGY, null) && stack.getCapability(CapabilityEnergy.ENERGY, null).canReceive();
+        return !stack.isEmpty() && stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::canReceive).orElse(false);
     }
 
     @Override
     public boolean canRemoveEnergy(ItemStack stack) {
-        return !stack.isEmpty() && stack.hasCapability(CapabilityEnergy.ENERGY, null) && stack.getCapability(CapabilityEnergy.ENERGY, null).canExtract();
+        return !stack.isEmpty() && stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::canExtract).orElse(false);
     }
 
     @Override
     public boolean canReadEnergy(ItemStack stack) {
-        return stack.hasCapability(CapabilityEnergy.ENERGY, null);
+        return stack.getCapability(ForgeCapabilities.ENERGY).isPresent();
     }
 
     @Override
     public long addEnergy(long add, ItemStack stack, ActionType actionType) {
-        IEnergyStorage storage = stack.getCapability(CapabilityEnergy.ENERGY, null);
-        return storage.receiveEnergy((int) Math.min(Integer.MAX_VALUE, add), actionType.shouldSimulate());
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(storage -> (long) storage.receiveEnergy((int) Math.min(Integer.MAX_VALUE, add), actionType.shouldSimulate())).orElse(0L);
     }
 
     @Override
     public long removeEnergy(long remove, ItemStack stack, ActionType actionType) {
-        IEnergyStorage storage = stack.getCapability(CapabilityEnergy.ENERGY, null);
-        return storage.extractEnergy((int) Math.min(Integer.MAX_VALUE, remove), actionType.shouldSimulate());
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(storage -> (long) storage.extractEnergy((int) Math.min(Integer.MAX_VALUE, remove), actionType.shouldSimulate())).orElse(0L);
     }
 
     @Override
     public long getStored(ItemStack stack) {
-        return stack.getCapability(CapabilityEnergy.ENERGY, null).getEnergyStored();
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
     }
 
     @Override
     public long getCapacity(ItemStack stack) {
-        return stack.getCapability(CapabilityEnergy.ENERGY, null).getMaxEnergyStored();
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getMaxEnergyStored).orElse(0);
     }
 }

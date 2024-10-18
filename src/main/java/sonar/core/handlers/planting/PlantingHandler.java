@@ -19,14 +19,14 @@ public class PlantingHandler {
     public List<ISonarPlanter> planters = new ArrayList<>();
     public List<ISonarFertiliser> fertilisers = new ArrayList<>();
 
-    public static PlantingHandler instance(){
+    public static PlantingHandler instance() {
         return SonarCore.instance.planting_handler;
     }
 
     @Nullable
-    public ISonarPlanter getPlanter(ItemStack seeds){
-        for(ISonarPlanter planter : planters){
-            if(planter.isPlantable(seeds)){
+    public ISonarPlanter getPlanter(ItemStack seeds) {
+        for (ISonarPlanter planter : planters) {
+            if (planter.isPlantable(seeds)) {
                 return planter;
             }
         }
@@ -44,9 +44,9 @@ public class PlantingHandler {
     }
 
     @Nullable
-    public ISonarHarvester getHarvester(World world, BlockPos pos, IBlockState state){
-        for(ISonarHarvester harvester : harvesters){
-            if(harvester.canHarvest(world, pos, state)){
+    public ISonarHarvester getHarvester(World world, BlockPos pos, IBlockState state) {
+        for (ISonarHarvester harvester : harvesters) {
+            if (harvester.canHarvest(world, pos, state)) {
                 return harvester;
             }
         }
@@ -54,21 +54,20 @@ public class PlantingHandler {
     }
 
     @Nullable
-    public ISonarFertiliser getFertiliser(World world, BlockPos pos, IBlockState state){
-        for(ISonarFertiliser fertiliser : fertilisers){
-            if(fertiliser.canFertilise(world, pos, state)){
+    public ISonarFertiliser getFertiliser(World world, BlockPos pos, IBlockState state) {
+        for (ISonarFertiliser fertiliser : fertilisers) {
+            if (fertiliser.canFertilise(world, pos, state)) {
                 return fertiliser;
             }
         }
         return null;
     }
 
-    public boolean doFertilise(World world, BlockPos pos, IBlockState state){
+    public boolean doFertilise(World world, BlockPos pos, IBlockState state) {
         ISonarFertiliser fertiliser = getFertiliser(world, pos, state);
-        if(fertiliser != null && fertiliser.canGrow(world, pos, state)) {
+        if (fertiliser != null && fertiliser.canGrow(world, pos, state)) {
             return fertiliser.grow(world, pos, state);
         }
         return false;
     }
-
 }

@@ -4,10 +4,10 @@ public class DirtyPart implements IDirtyPart {
 
 	protected ISyncableListener listener;
 
-    public DirtyPart() {
-    }
+	public DirtyPart() {
+	}
 
-    @Override
+	@Override
 	public DirtyPart setListener(ISyncableListener listener) {
 		this.listener = listener;
 		return this;
@@ -18,8 +18,9 @@ public class DirtyPart implements IDirtyPart {
 		return listener;
 	}
 
-	public void markChanged() {
-		if (listener != null)
+	public void markDirty() { // Updated method name to follow NeoForge conventions
+		if (listener != null) {
 			listener.markChanged(this);
+		}
 	}
 }

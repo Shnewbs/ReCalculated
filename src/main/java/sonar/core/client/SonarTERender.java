@@ -1,29 +1,38 @@
 package sonar.core.client;
 
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import sonar.core.helpers.RenderHelper;
 
-public abstract class SonarTERender extends TileEntitySpecialRenderer {
-	public ModelBase model;
-	public String texture;
+public abstract class SonarTERender<T extends BlockEntity> implements BlockEntityRenderer<T> {
+	protected final ModelPart model;
+	protected final ResourceLocation texture;
 
-	public SonarTERender(ModelBase model, String texture) {
+	public SonarTERender(ModelPart model, ResourceLocation texture) {
 		this.model = model;
 		this.texture = texture;
 	}
 
-	public void render(TileEntity te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-		RenderHelper.beginRender(x + 0.5F, y + 1.5F, z + 0.5F, RenderHelper.setMetaData(te), texture);
-		model.render(null, 0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 0.0625F);
+	@Override
+	public void render(T blockEntity, float partialTicks, net.minecraft.client.renderer.MultiBufferSource bufferSource, int combinedLight, int combinedOverlay) {
+		RenderHelper.beginRender(bufferSource, model, texture, blockEntity, partialTicks);
+		model.renderToBuffer(bufferSource.getBuffer(RenderHelper.getRenderType(texture)), combinedLight, combinedOverlay);
 		RenderHelper.finishRender();
-		renderExtras(te, x, y, z, alpha);
+		renderExtras(blockEntity);
 	}
 
-	/** for extra rotations and translations to be added, or rendering
-	 * effects */
-	public void renderExtras(TileEntity entity, double x, double y, double z, float f) {
+	/**
+	 * For extra rotations and translations to be added, or rendering effects
+	 */
+	public void renderExtras(T blockEntity) {
+		// Override to add extra rendering
+	}
 
+	@Override
+	public boolean shouldRenderOffScreen(T blockEntity) {
+		return true;
 	}
 }

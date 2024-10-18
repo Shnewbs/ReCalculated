@@ -11,29 +11,31 @@ public class TransferMethodSimple implements ITransferMethod {
     public int tick;
     public int tickTime = 0;
 
-    public TransferMethodSimple(ItemTransferHandler handler){
+    public TransferMethodSimple(ItemTransferHandler handler) {
         this.transferHandler = handler;
     }
 
-    public TransferMethodSimple setTickTime(int tickTime){
+    public TransferMethodSimple setTickTime(int tickTime) {
         this.tickTime = tickTime;
         return this;
     }
 
-    public TransferMethodSimple setTransferRate(int perTick){
+    public TransferMethodSimple setTransferRate(int perTick) {
         this.perTick = perTick;
         return this;
     }
 
     @Override
     public void transfer() {
-        if(tickTime != 0){
+        if (tickTime != 0) {
             tick++;
-            if(!(tick >= tickTime)){
-                return;
+            if (tick < tickTime) {
+                return; // Skip transfer if tick limit not reached
             }
+            tick = 0; // Reset tick after reaching the time limit
         }
-        if(!transferHandler.sources.isEmpty() && !transferHandler.destinations.isEmpty()){
+
+        if (!transferHandler.sources.isEmpty() && !transferHandler.destinations.isEmpty()) {
             ItemTransferHelper.doSimpleTransfer(transferHandler.sources, transferHandler.destinations, transferHandler.filter, perTick);
         }
     }

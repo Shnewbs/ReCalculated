@@ -1,27 +1,27 @@
 package sonar.core.api.machines;
 
 /**
- * implemented on machines which have progress bars
+ * Interface for machines that have progress bars and process times.
  */
 public interface IProcessMachine {
 
     /**
-     * current process
+     * @return The current process time of the machine.
      */
     int getCurrentProcessTime();
 
     /**
-     * current speed
+     * @return The current speed or process time of the machine.
      */
     int getProcessTime();
 
     /**
-     * normal speed of the machine
+     * @return The base or normal process time of the machine.
      */
     int getBaseProcessTime();
-	
+
     /**
-     * current energy usage in RF per tick (can be less than 1)
+     * @return The current energy usage in RF per tick (can be less than 1).
      */
     double getEnergyUsage();
 }
